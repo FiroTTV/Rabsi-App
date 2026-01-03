@@ -136,8 +136,78 @@ button:disabled {
         🔒 Geschenk gesperrt<br>
         Noch nicht alle Tage geschafft
     </div>
+
+<button id="reminderBtn" style="
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+  font-weight:600;
+  background:#7a5cff;
+  color:white;
+  cursor:pointer;
+">
+🔔 Täglichen Reminder aktivieren
+</button>
+
+    
 </div>
 
+const reminderBtn = document.getElementById("reminderBtn");
+
+if (localStorage.getItem("rabsiReminderActive")) {
+  reminderBtn.textContent = "✅ Reminder aktiviert";
+  reminderBtn.disabled = true;
+}
+
+reminderBtn.onclick = async () => {
+  if (!("Notification" in window)) {
+    alert("Benachrichtigungen werden nicht unterstützt 😕");
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    alert("Bitte Benachrichtigungen erlauben 💖");
+    return;
+  }
+
+  scheduleDailyReminder(20); // ⏰ UHRZEIT HIER (20 = 20:00)
+  localStorage.setItem("rabsiReminderActive", "true");
+  reminderBtn.textContent = "✅ Reminder aktiviert";
+  reminderBtn.disabled = true;
+};
+
+function scheduleDailyReminder(hour) {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, 0, 0, 0);
+
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const timeout = target - now;
+
+  setTimeout(() => {
+    showNotification();
+    setInterval(showNotification, 24 * 60 * 60 * 1000);
+  }, timeout);
+}
+
+function showNotification() {
+  navigator.serviceWorker.ready.then(registration => {
+    registration.showNotification("Rabsi 💅", {
+      body: "Hast du heute deine Nägel nicht gekaut? 💖",
+      icon: "icon-192.png",
+      badge: "icon-192.png",
+      requireInteraction: true
+    });
+  });
+}
+
+    
 <script>
 /* =========================
    BASISDATEN
@@ -270,3 +340,4 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
