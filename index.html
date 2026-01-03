@@ -208,12 +208,17 @@ function buildCalendar() {
 ===================== */
 function updateStreak() {
     let streak = 0;
-    for (let d = 1; d <= daysInMonth; d++) {
-        if (data[keyFor(d)] === "success") streak++;
-        else break;
+    for (let d = today.getDate(); d >= 1; d--) {
+        if (data[keyFor(d)] === "success") {
+            streak++;
+        } else {
+            break;
+        }
     }
     streakBox.textContent = `🔥 ${streak} Tage clean`;
 }
+
+
 
 /* =====================
    GESCHENK
@@ -314,3 +319,4 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
