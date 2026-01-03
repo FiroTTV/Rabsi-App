@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Rabsi – Nail Streak 💅2026</title>
+<title>Rabsi – Nail Streak 💅 2026</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- PWA -->
@@ -64,7 +64,6 @@ h1 {
     justify-content: center;
     font-weight: 600;
     background: #eee;
-    user-select: none;
 }
 
 .success { background: #b7f5c8; }
@@ -101,6 +100,7 @@ button:disabled {
     padding: 18px;
     border-radius: 14px;
     background: #f7f7f7;
+    margin-bottom: 14px;
 }
 
 .locked { color: #888; }
@@ -108,12 +108,18 @@ button:disabled {
 .unlocked {
     background: linear-gradient(135deg, gold, orange);
     font-weight: 600;
-    animation: pop 0.6s ease;
 }
 
-@keyframes pop {
-    0% { transform: scale(0.9); }
-    100% { transform: scale(1); }
+#reminderBtn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    background: #7a5cff;
+    color: white;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -137,81 +143,13 @@ button:disabled {
         Noch nicht alle Tage geschafft
     </div>
 
-<button id="reminderBtn" style="
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:none;
-  font-size:16px;
-  font-weight:600;
-  background:#7a5cff;
-  color:white;
-  cursor:pointer;
-">
-🔔 Täglichen Reminder aktivieren
-</button>
-
-    
+    <button id="reminderBtn">🔔 Täglichen Reminder aktivieren</button>
 </div>
 
-const reminderBtn = document.getElementById("reminderBtn");
-
-if (localStorage.getItem("rabsiReminderActive")) {
-  reminderBtn.textContent = "✅ Reminder aktiviert";
-  reminderBtn.disabled = true;
-}
-
-reminderBtn.onclick = async () => {
-  if (!("Notification" in window)) {
-    alert("Benachrichtigungen werden nicht unterstützt 😕");
-    return;
-  }
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    alert("Bitte Benachrichtigungen erlauben 💖");
-    return;
-  }
-
-  scheduleDailyReminder(20); // ⏰ UHRZEIT HIER (20 = 20:00)
-  localStorage.setItem("rabsiReminderActive", "true");
-  reminderBtn.textContent = "✅ Reminder aktiviert";
-  reminderBtn.disabled = true;
-};
-
-function scheduleDailyReminder(hour) {
-  const now = new Date();
-  const target = new Date();
-  target.setHours(hour, 0, 0, 0);
-
-  if (target <= now) {
-    target.setDate(target.getDate() + 1);
-  }
-
-  const timeout = target - now;
-
-  setTimeout(() => {
-    showNotification();
-    setInterval(showNotification, 24 * 60 * 60 * 1000);
-  }, timeout);
-}
-
-function showNotification() {
-  navigator.serviceWorker.ready.then(registration => {
-    registration.showNotification("Rabsi 💅", {
-      body: "Hast du heute deine Nägel nicht gekaut? 💖",
-      icon: "icon-192.png",
-      badge: "icon-192.png",
-      requireInteraction: true
-    });
-  });
-}
-
-    
 <script>
-/* =========================
-   BASISDATEN
-========================= */
+/* =====================
+   BASIS
+===================== */
 const today = new Date();
 const year = today.getFullYear();
 const month = today.getMonth();
@@ -220,34 +158,32 @@ const daysInMonth = new Date(year, month + 1, 0).getDate();
 const STORAGE_KEY = "rabsi_nail_streak_all_year";
 const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
-/* =========================
+/* =====================
    ELEMENTE
-========================= */
+===================== */
 const calendar = document.getElementById("calendar");
 const streakBox = document.getElementById("streakBox");
 const giftBox = document.getElementById("giftBox");
 const btnYes = document.getElementById("btnYes");
 const btnNo = document.getElementById("btnNo");
 const monthTitle = document.getElementById("monthTitle");
+const reminderBtn = document.getElementById("reminderBtn");
 
-/* =========================
-   MONATSTITEL
-========================= */
+/* =====================
+   MONAT
+===================== */
 monthTitle.textContent = today.toLocaleString("de-DE", {
     month: "long",
     year: "numeric"
 });
 
-/* =========================
-   HILFSFUNKTIONEN
-========================= */
 function keyFor(day) {
     return `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 
-/* =========================
+/* =====================
    KALENDER
-========================= */
+===================== */
 function buildCalendar() {
     calendar.innerHTML = "";
     for (let d = 1; d <= daysInMonth; d++) {
@@ -267,9 +203,9 @@ function buildCalendar() {
     }
 }
 
-/* =========================
+/* =====================
    STREAK
-========================= */
+===================== */
 function updateStreak() {
     let streak = 0;
     for (let d = 1; d <= daysInMonth; d++) {
@@ -279,9 +215,9 @@ function updateStreak() {
     streakBox.textContent = `🔥 ${streak} Tage clean`;
 }
 
-/* =========================
+/* =====================
    GESCHENK
-========================= */
+===================== */
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
         if (data[keyFor(d)] !== "success") {
@@ -291,16 +227,12 @@ function checkGift() {
         }
     }
     giftBox.className = "gift unlocked";
-    giftBox.innerHTML = `
-        🎁 GESCHENK FREIGESCHALTET 🎉<br><br>
-        Rabsi, ich bin unglaublich stolz auf dich 💖<br>
-        Ein ganzer Monat ohne Nägelkauen – du bist stark.
-    `;
+    giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin mega stolz auf dich 💖";
 }
 
-/* =========================
+/* =====================
    HEUTE SPEICHERN
-========================= */
+===================== */
 function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
@@ -324,20 +256,61 @@ if (data[keyFor(today.getDate())]) {
     btnNo.disabled = true;
 }
 
-/* =========================
+/* =====================
+   REMINDER
+===================== */
+if (localStorage.getItem("rabsiReminderActive")) {
+    reminderBtn.textContent = "✅ Reminder aktiviert";
+    reminderBtn.disabled = true;
+}
+
+reminderBtn.onclick = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+        alert("Bitte Benachrichtigungen erlauben 💖");
+        return;
+    }
+
+    scheduleDailyReminder(20); // ⏰ 20 = 20:00 Uhr
+    localStorage.setItem("rabsiReminderActive", "true");
+    reminderBtn.textContent = "✅ Reminder aktiviert";
+    reminderBtn.disabled = true;
+};
+
+function scheduleDailyReminder(hour) {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hour, 0, 0, 0);
+
+    if (target <= now) target.setDate(target.getDate() + 1);
+
+    setTimeout(() => {
+        showNotification();
+        setInterval(showNotification, 24 * 60 * 60 * 1000);
+    }, target - now);
+}
+
+function showNotification() {
+    navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification("Rabsi 💅", {
+            body: "Hast du heute deine Nägel nicht gekaut? 💖",
+            icon: "icon-192.png",
+            badge: "icon-192.png",
+            requireInteraction: true
+        });
+    });
+}
+
+/* =====================
    INIT
-========================= */
+===================== */
 buildCalendar();
 updateStreak();
 checkGift();
 
-/* =========================
-   SERVICE WORKER (PWA)
-========================= */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 </body>
 </html>
-
