@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Rabsi – Nail Streak 💅2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffd6e8">
+
+<style>
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: linear-gradient(135deg, #ffd6e8, #e6dbff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.streak {
+    text-align: center;
+    background: #f6f6ff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.day {
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    background: #eee;
+    user-select: none;
+}
+
+.success { background: #b7f5c8; }
+.fail { background: #ffb7b7; }
+.future { background: #ddd; }
+.today { outline: 3px solid #7a5cff; }
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.yes { background: #7be495; }
+.no { background: #ff8a8a; }
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gift {
+    text-align: center;
+    padding: 18px;
+    border-radius: 14px;
+    background: #f7f7f7;
+}
+
+.locked { color: #888; }
+
+.unlocked {
+    background: linear-gradient(135deg, gold, orange);
+    font-weight: 600;
+    animation: pop 0.6s ease;
+}
+
+@keyframes pop {
+    0% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+    <h1>💅 Rabsi's Nail-Streak</h1>
+    <div class="subtitle" id="monthTitle"></div>
+
+    <div class="streak" id="streakBox">🔥 0 Tage clean</div>
+
+    <div class="calendar" id="calendar"></div>
+
+    <div class="buttons">
+        <button class="yes" id="btnYes">Heute nicht gekaut ✅</button>
+        <button class="no" id="btnNo">Heute gekaut ❌</button>
+    </div>
+
+    <div class="gift locked" id="giftBox">
+        🔒 Geschenk gesperrt<br>
+        Noch nicht alle Tage geschafft
+    </div>
+</div>
+
+<script>
+/* =========================
+   BASISDATEN
+========================= */
+const today = new Date();
+const year = today.getFullYear();
+const month = today.getMonth();
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+const STORAGE_KEY = "rabsi_nail_streak_all_year";
+const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+/* =========================
+   ELEMENTE
+========================= */
+const calendar = document.getElementById("calendar");
+const streakBox = document.getElementById("streakBox");
+const giftBox = document.getElementById("giftBox");
+const btnYes = document.getElementById("btnYes");
+const btnNo = document.getElementById("btnNo");
+const monthTitle = document.getElementById("monthTitle");
+
+/* =========================
+   MONATSTITEL
+========================= */
+monthTitle.textContent = today.toLocaleString("de-DE", {
+    month: "long",
+    year: "numeric"
+});
+
+/* =========================
+   HILFSFUNKTIONEN
+========================= */
+function keyFor(day) {
+    return `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+}
+
+/* =========================
+   KALENDER
+========================= */
+function buildCalendar() {
+    calendar.innerHTML = "";
+    for (let d = 1; d <= daysInMonth; d++) {
+        const el = document.createElement("div");
+        el.className = "day";
+        el.textContent = d;
+
+        const date = new Date(year, month, d);
+        const key = keyFor(d);
+
+        if (date > today) el.classList.add("future");
+        if (data[key] === "success") el.classList.add("success");
+        if (data[key] === "fail") el.classList.add("fail");
+        if (d === today.getDate()) el.classList.add("today");
+
+        calendar.appendChild(el);
+    }
+}
+
+/* =========================
+   STREAK
+========================= */
+function updateStreak() {
+    let streak = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+        if (data[keyFor(d)] === "success") streak++;
+        else break;
+    }
+    streakBox.textContent = `🔥 ${streak} Tage clean`;
+}
+
+/* =========================
+   GESCHENK
+========================= */
+function checkGift() {
+    for (let d = 1; d <= daysInMonth; d++) {
+        if (data[keyFor(d)] !== "success") {
+            giftBox.className = "gift locked";
+            giftBox.innerHTML = "🔒 Geschenk gesperrt<br>Noch nicht alle Tage geschafft";
+            return;
+        }
+    }
+    giftBox.className = "gift unlocked";
+    giftBox.innerHTML = `
+        🎁 GESCHENK FREIGESCHALTET 🎉<br><br>
+        Rabsi, ich bin unglaublich stolz auf dich 💖<br>
+        Ein ganzer Monat ohne Nägelkauen – du bist stark.
+    `;
+}
+
+/* =========================
+   HEUTE SPEICHERN
+========================= */
+function saveToday(result) {
+    const key = keyFor(today.getDate());
+    if (data[key]) return;
+
+    data[key] = result;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    btnYes.disabled = true;
+    btnNo.disabled = true;
+
+    buildCalendar();
+    updateStreak();
+    checkGift();
+}
+
+btnYes.onclick = () => saveToday("success");
+btnNo.onclick = () => saveToday("fail");
+
+if (data[keyFor(today.getDate())]) {
+    btnYes.disabled = true;
+    btnNo.disabled = true;
+}
+
+/* =========================
+   INIT
+========================= */
+buildCalendar();
+updateStreak();
+checkGift();
+
+/* =========================
+   SERVICE WORKER (PWA)
+========================= */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+</body>
+</html>
