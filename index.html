@@ -286,8 +286,13 @@ firebase.initializeApp({
   appId: "1:261656631522:web:9b79c2cbc0e1e8790126bb"
 });
 const auth = firebase.auth();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-.catch(err => console.error(err));
+
+const authReady = auth.setPersistence(
+  firebase.auth.Auth.Persistence.LOCAL
+).catch(err => {
+  console.error("Auth persistence error:", err);
+});
+
 const db = firebase.firestore();
 
 /* ===== STARS ===== */
@@ -586,12 +591,18 @@ auth.onAuthStateChanged(user => {
 function login() {
     const e = email.value;
     const p = password.value;
-    auth.signInWithEmailAndPassword(e, p)
-        .catch(() => auth.createUserWithEmailAndPassword(e, p));
+
+    authReady.then(() => {
+        auth.signInWithEmailAndPassword(e, p)
+            .catch(() =>
+                auth.createUserWithEmailAndPassword(e, p)
+            );
+    });
 }
 function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
 
