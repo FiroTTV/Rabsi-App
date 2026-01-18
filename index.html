@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#ffd6e8">
 
 <style>
+/* ========== BASIS ========== */
 body {
     margin: 0;
     font-family: system-ui, sans-serif;
@@ -37,6 +38,7 @@ body.dark .app {
     color: #f0f0f0;
 }
 
+/* ========== TEXT ========== */
 h1 {
     text-align: center;
     margin-bottom: 8px;
@@ -48,10 +50,9 @@ h1 {
     margin-bottom: 16px;
 }
 
-body.dark .subtitle {
-    color: #aaa;
-}
+body.dark .subtitle { color: #aaa; }
 
+/* ========== BOXEN ========== */
 .streak, .gift {
     text-align: center;
     background: #f6f6ff;
@@ -66,6 +67,17 @@ body.dark .gift {
     background: #2a2a3d;
 }
 
+/* ========== WOCHENTAGE ========== */
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+/* ========== KALENDER ========== */
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -81,14 +93,27 @@ body.dark .gift {
     justify-content: center;
     font-weight: 600;
     background: #eee;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 body.dark .day { background: #333; }
-.future { background: #ddd; }
-.success { background: #b7f5c8; }
-.fail { background: #ffb7b7; }
-.today { outline: 3px solid #7a5cff; }
 
+.future { background: #bbb; }
+
+.success {
+    background: #4cd964 !important;
+    box-shadow: 0 0 10px rgba(76,217,100,0.8);
+}
+
+.fail {
+    background: #ff5c5c !important;
+}
+
+.today {
+    outline: 3px solid #7a5cff;
+}
+
+/* ========== BUTTONS ========== */
 .buttons {
     display: flex;
     gap: 10px;
@@ -113,13 +138,18 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.locked { color: #888; }
-
-.unlocked {
-    background: linear-gradient(135deg, gold, orange);
-    font-weight: 600;
+/* ========== ANIMATION ========== */
+.pop {
+    animation: pop 0.4s ease;
 }
 
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* ========== EXTRA BUTTONS ========== */
 #darkToggle, #reminderBtn {
     width: 100%;
     margin-bottom: 12px;
@@ -127,23 +157,32 @@ button:disabled {
     border-radius: 14px;
     border: none;
     font-weight: 600;
-    cursor: pointer;
 }
 
 #darkToggle { background: #ddd; }
 #reminderBtn { background: #7a5cff; color: white; }
+
+.locked { color: #888; }
+.unlocked {
+    background: linear-gradient(135deg, gold, orange);
+    font-weight: 600;
+}
 </style>
 </head>
 
 <body>
 <div class="app">
     <h1>🔥 Rabsi's Nail-Streak</h1>
-
     <button id="darkToggle">🌙 Dunkler Modus</button>
 
     <div class="subtitle" id="monthTitle"></div>
 
     <div class="streak" id="streakBox">🔥 0 Tage clean</div>
+
+    <div class="weekdays">
+        <div>Mo</div><div>Di</div><div>Mi</div>
+        <div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+    </div>
 
     <div class="calendar" id="calendar"></div>
 
@@ -161,7 +200,7 @@ button:disabled {
 </div>
 
 <script>
-/* ================= BASIS ================= */
+/* ========== BASIS ========== */
 const today = new Date();
 const year = today.getFullYear();
 const month = today.getMonth();
@@ -170,17 +209,15 @@ const daysInMonth = new Date(year, month + 1, 0).getDate();
 const STORAGE_KEY = "rabsi_nail_streak_all_year";
 const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
-/* ================= ELEMENTE ================= */
 const calendar = document.getElementById("calendar");
 const streakBox = document.getElementById("streakBox");
 const giftBox = document.getElementById("giftBox");
 const btnYes = document.getElementById("btnYes");
 const btnNo = document.getElementById("btnNo");
 const monthTitle = document.getElementById("monthTitle");
-const reminderBtn = document.getElementById("reminderBtn");
 const darkToggle = document.getElementById("darkToggle");
 
-/* ================= MONAT ================= */
+/* ========== MONAT ========== */
 monthTitle.textContent = today.toLocaleString("de-DE", {
     month: "long",
     year: "numeric"
@@ -190,9 +227,17 @@ function keyFor(day) {
     return `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 
-/* ================= KALENDER ================= */
+/* ========== KALENDER ========== */
 function buildCalendar() {
     calendar.innerHTML = "";
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = (firstDay + 6) % 7;
+
+    for (let i = 0; i < offset; i++) {
+        const empty = document.createElement("div");
+        calendar.appendChild(empty);
+    }
+
     for (let d = 1; d <= daysInMonth; d++) {
         const el = document.createElement("div");
         el.className = "day";
@@ -210,7 +255,7 @@ function buildCalendar() {
     }
 }
 
-/* ================= STREAK ================= */
+/* ========== STREAK ========== */
 function updateStreak() {
     const todayKey = keyFor(today.getDate());
     if (data[todayKey] !== "success") {
@@ -226,7 +271,7 @@ function updateStreak() {
     streakBox.textContent = `🔥 ${streak} Tage clean`;
 }
 
-/* ================= GESCHENK ================= */
+/* ========== GESCHENK ========== */
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
         if (data[keyFor(d)] !== "success") {
@@ -239,7 +284,7 @@ function checkGift() {
     giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
 }
 
-/* ================= SPEICHERN ================= */
+/* ========== SPEICHERN + ANIMATION ========== */
 function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
@@ -253,6 +298,9 @@ function saveToday(result) {
     buildCalendar();
     updateStreak();
     checkGift();
+
+    streakBox.classList.add("pop");
+    setTimeout(() => streakBox.classList.remove("pop"), 400);
 }
 
 btnYes.onclick = () => saveToday("success");
@@ -263,8 +311,8 @@ if (data[keyFor(today.getDate())]) {
     btnNo.disabled = true;
 }
 
-/* ================= DARK MODE ================= */
-function applyDarkMode(on) {
+/* ========== DARK MODE ========== */
+function applyDark(on) {
     document.body.classList.toggle("dark", on);
     localStorage.setItem("rabsiDarkMode", on ? "1" : "0");
     darkToggle.textContent = on ? "☀️ Heller Modus" : "🌙 Dunkler Modus";
@@ -272,52 +320,11 @@ function applyDarkMode(on) {
 
 const savedDark = localStorage.getItem("rabsiDarkMode");
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-applyDarkMode(savedDark ? savedDark === "1" : prefersDark);
+applyDark(savedDark ? savedDark === "1" : prefersDark);
 
-darkToggle.onclick = () => {
-    applyDarkMode(!document.body.classList.contains("dark"));
-};
+darkToggle.onclick = () => applyDark(!document.body.classList.contains("dark"));
 
-/* ================= REMINDER ================= */
-if (localStorage.getItem("rabsiReminderActive")) {
-    reminderBtn.textContent = "✅ Reminder aktiviert";
-    reminderBtn.disabled = true;
-}
-
-reminderBtn.onclick = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
-
-    scheduleDailyReminder(20);
-    localStorage.setItem("rabsiReminderActive", "true");
-    reminderBtn.textContent = "✅ Reminder aktiviert";
-    reminderBtn.disabled = true;
-};
-
-function scheduleDailyReminder(hour) {
-    const now = new Date();
-    const target = new Date();
-    target.setHours(hour, 0, 0, 0);
-    if (target <= now) target.setDate(target.getDate() + 1);
-
-    setTimeout(() => {
-        showNotification();
-        setInterval(showNotification, 86400000);
-    }, target - now);
-}
-
-function showNotification() {
-    navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification("Rabsi 💅", {
-            body: "Hast du heute deine Nägel nicht gekaut? 💖",
-            icon: "icon-192.png",
-            badge: "icon-192.png",
-            requireInteraction: true
-        });
-    });
-}
-
-/* ================= INIT ================= */
+/* ========== INIT ========== */
 buildCalendar();
 updateStreak();
 checkGift();
