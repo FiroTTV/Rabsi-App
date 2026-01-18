@@ -1,6 +1,6 @@
 {
   "name": "Rabsi Nail Streak",
-  "short_name": "Rabsi 💅",
+  "short_name": "Rabsi's Nailstreak",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -18,3 +18,4 @@
     }
   ]
 }
+
