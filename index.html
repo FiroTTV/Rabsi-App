@@ -561,6 +561,11 @@ auth.onAuthStateChanged(user => {
     }
     loginBox.classList.add("hidden");
     appBox.classList.remove("hidden");
+    // 🔧 Stelle sicher, dass E-Mail immer gespeichert ist
+    db.collection("users").doc(user.uid).set({
+    email: user.email
+    }, { merge: true });
+
 
     accEmail.textContent = user.email;
     accUid.textContent = user.uid;
@@ -586,3 +591,4 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
