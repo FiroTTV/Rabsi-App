@@ -10,15 +10,20 @@
 
 <style>
 /* ===== BASIS ===== */
-body {
+html, body {
     margin: 0;
+    padding: 0;
     font-family: system-ui, sans-serif;
-    background: linear-gradient(135deg, #ffd6e8, #e6dbff);
     min-height: 100vh;
+    overflow-y: auto;
+}
+
+body {
+    background: linear-gradient(135deg, #ffd6e8, #e6dbff);
     display: flex;
     justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    align-items: flex-start;
+    padding: 24px 0;
 }
 
 /* ===== DARK MODE BACKGROUND ===== */
@@ -35,7 +40,9 @@ body.dark {
     opacity: 0;
     transition: opacity 0.5s ease;
 }
-body.dark #stars { opacity: 1; }
+body.dark #stars {
+    opacity: 1;
+}
 
 .star {
     position: absolute;
@@ -54,7 +61,7 @@ body.dark #stars { opacity: 1; }
 /* ===== APP CARD ===== */
 .app {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     background: white;
     width: 100%;
     max-width: 420px;
@@ -72,9 +79,20 @@ body.dark .app {
 }
 
 /* ===== TEXT ===== */
-h1 { text-align: center; margin-bottom: 8px; }
-.subtitle { text-align: center; color: #666; margin-bottom: 16px; }
-body.dark .subtitle { color: #aaa; }
+h1 {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+body.dark .subtitle {
+    color: #aaa;
+}
 
 /* ===== BOXEN ===== */
 .streak, .gift {
@@ -85,6 +103,7 @@ body.dark .subtitle { color: #aaa; }
     margin-bottom: 16px;
     font-size: 18px;
 }
+
 body.dark .streak,
 body.dark .gift {
     background: #2a2a3d;
@@ -92,25 +111,33 @@ body.dark .gift {
 
 /* ===== BUTTONS ===== */
 button {
+    width: 100%;
     padding: 12px;
     border-radius: 14px;
     border: none;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    margin-bottom: 10px;
 }
+
 .buttons {
     display: flex;
     gap: 10px;
     margin-bottom: 16px;
 }
+
+.buttons button {
+    width: 50%;
+    margin-bottom: 0;
+}
+
 .yes { background: #7be495; }
 .no { background: #ff8a8a; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-#darkToggle, #statsBtn {
-    width: 100%;
-    margin-bottom: 12px;
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 body.dark #darkToggle {
@@ -135,6 +162,7 @@ body.dark #darkToggle {
     gap: 8px;
     margin-bottom: 16px;
 }
+
 .day {
     aspect-ratio: 1 / 1;
     border-radius: 12px;
@@ -143,24 +171,14 @@ body.dark #darkToggle {
     justify-content: center;
     font-weight: 600;
     background: #eee;
-    transition: transform 0.2s ease;
 }
+
 body.dark .day { background: #333; }
 
 .future { background: #bbb; }
-.success { background: #4cd964 !important; box-shadow: 0 0 10px rgba(76,217,100,0.8); }
+.success { background: #4cd964 !important; }
 .fail { background: #ff5c5c !important; }
 .today { outline: 3px solid #7a5cff; }
-
-/* ===== POP ANIMATION ===== */
-.pop {
-    animation: pop 0.4s ease;
-}
-@keyframes pop {
-    0% { transform: scale(0.8); }
-    70% { transform: scale(1.15); }
-    100% { transform: scale(1); }
-}
 
 /* ===== MODAL ===== */
 .modal {
@@ -172,6 +190,7 @@ body.dark .day { background: #333; }
     align-items: center;
     z-index: 1000;
 }
+
 .modal-content {
     background: white;
     padding: 20px;
@@ -179,16 +198,19 @@ body.dark .day { background: #333; }
     width: 90%;
     max-width: 400px;
 }
+
 body.dark .modal-content {
     background: #1c1c28;
     color: #fff;
 }
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
     margin: 12px 0;
 }
+
 .stats-grid div {
     aspect-ratio: 1/1;
     border-radius: 8px;
@@ -218,7 +240,7 @@ body.dark .modal-content {
 
     <div class="subtitle" id="monthTitle"></div>
 
-    <div class="streak" id="streakBox">🔥 0 Tage Streak</div>
+    <div class="streak" id="streakBox">🔥 0 Tage clean</div>
 
     <div class="weekdays">
         <div>Mo</div><div>Di</div><div>Mi</div>
@@ -238,7 +260,7 @@ body.dark .modal-content {
     </div>
 </div>
 
-<!-- ===== STATISTIK MODAL ===== -->
+<!-- ===== STATISTIK ===== -->
 <div class="modal" id="statsModal">
     <div class="modal-content">
         <h2>📊 Statistik</h2>
@@ -297,6 +319,7 @@ function buildCalendar() {
     calendar.innerHTML = "";
     const firstDay = new Date(year, month, 1).getDay();
     const offset = (firstDay + 6) % 7;
+
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -322,7 +345,7 @@ function buildCalendar() {
 function updateStreak() {
     const todayKey = keyFor(year, month, today.getDate());
     if (data[todayKey] !== "success") {
-        streakBox.textContent = "🔥 0 Tage Streak";
+        streakBox.textContent = "🔥 0 Tage clean";
         return;
     }
     let streak = 0;
@@ -330,7 +353,7 @@ function updateStreak() {
         if (data[keyFor(year, month, d)] === "success") streak++;
         else break;
     }
-    streakBox.textContent = `🔥 ${streak} Tage Streak`;
+    streakBox.textContent = `🔥 ${streak} Tage clean`;
 }
 
 /* ===== GESCHENK ===== */
@@ -346,7 +369,7 @@ function checkGift() {
     giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
 }
 
-/* ===== SPEICHERN + ANIMATION ===== */
+/* ===== SPEICHERN ===== */
 function saveToday(result) {
     const key = keyFor(year, month, today.getDate());
     if (data[key]) return;
@@ -357,8 +380,6 @@ function saveToday(result) {
     buildCalendar();
     updateStreak();
     checkGift();
-    streakBox.classList.add("pop");
-    setTimeout(() => streakBox.classList.remove("pop"), 400);
 }
 
 btnYes.onclick = () => saveToday("success");
@@ -442,7 +463,7 @@ function renderStats(monthKey) {
     const gift = success === dim ? "✅" : "❌";
 
     statsSummary.innerHTML = `
-        🟢 ${success} Tage Streak<br>
+        🟢 ${success} Tage clean<br>
         🔴 ${fail} Tage gekaut<br>
         📈 ${percent}% clean<br>
         🔥 Längste Streak: ${longest}<br>
@@ -461,4 +482,3 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
-
