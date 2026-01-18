@@ -544,7 +544,8 @@ async function adminEditProgress() {
 
     const doc = snap.docs[0];
     const uid = doc.id;
-    const userData = doc.data().streakData || {};
+    const raw = doc.data();
+    const userData = raw.streakData ? { ...raw.streakData } : {};
 
     const d = new Date(date);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -553,8 +554,9 @@ async function adminEditProgress() {
     else userData[key] = value;
 
     await db.collection("users").doc(uid).set({
-        streakData: userData
-    }, { merge: true });
+    email: raw.email || email,
+    streakData: userData
+}, { merge: true });
 
     alert("✅ Progress aktualisiert");
 }
@@ -621,6 +623,7 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
 
 
