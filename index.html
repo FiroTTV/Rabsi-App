@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ffd6e8">
+<meta name="theme-color" content="#7a5cff">
 
 <style>
 /* ===== BASIS ===== */
@@ -18,17 +18,43 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-body.dark {
-    background: linear-gradient(
-        135deg,
-        #2b1d3a,
-        #1e1e2f,
-        #2a1f4f
-    );
+    overflow: hidden;
 }
 
+/* ===== DARK MODE BACKGROUND ===== */
+body.dark {
+    background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
+}
+
+/* ===== STERNE ===== */
+#stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+body.dark #stars { opacity: 1; }
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: radial-gradient(circle, #ffffff, #c7b3ff);
+    border-radius: 50%;
+    animation: floatStar linear infinite;
+}
+
+@keyframes floatStar {
+    from { transform: translateY(0); opacity: 0.2; }
+    to { transform: translateY(-100vh); opacity: 1; }
+}
+
+/* ===== APP CARD ===== */
 .app {
+    position: relative;
+    z-index: 1;
     background: white;
     width: 100%;
     max-width: 420px;
@@ -36,6 +62,7 @@ body.dark {
     padding: 24px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
+
 body.dark .app {
     background: linear-gradient(180deg, #1f1b2e, #181826);
     color: #f0f0f0;
@@ -43,7 +70,6 @@ body.dark .app {
         0 20px 40px rgba(0,0,0,0.6),
         0 0 40px rgba(122,92,255,0.15);
 }
-
 
 /* ===== TEXT ===== */
 h1 { text-align: center; margin-bottom: 8px; }
@@ -87,7 +113,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     margin-bottom: 12px;
 }
 
-/* ===== KALENDER ===== */
+body.dark #darkToggle {
+    background: #3a2b5c;
+    color: #fff;
+}
+
+/* ===== WOCHENTAGE ===== */
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -96,6 +127,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     opacity: 0.7;
     margin-bottom: 6px;
 }
+
+/* ===== KALENDER ===== */
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -110,14 +143,26 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     justify-content: center;
     font-weight: 600;
     background: #eee;
+    transition: transform 0.2s ease;
 }
 body.dark .day { background: #333; }
+
 .future { background: #bbb; }
-.success { background: #4cd964 !important; }
+.success { background: #4cd964 !important; box-shadow: 0 0 10px rgba(76,217,100,0.8); }
 .fail { background: #ff5c5c !important; }
 .today { outline: 3px solid #7a5cff; }
 
-/* ===== MODAL (STATISTIK) ===== */
+/* ===== POP ANIMATION ===== */
+.pop {
+    animation: pop 0.4s ease;
+}
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* ===== MODAL ===== */
 .modal {
     position: fixed;
     inset: 0;
@@ -138,7 +183,6 @@ body.dark .modal-content {
     background: #1c1c28;
     color: #fff;
 }
-.modal h2 { text-align: center; margin-top: 0; }
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -153,10 +197,6 @@ body.dark .modal-content {
     justify-content: center;
     font-size: 12px;
 }
-.close {
-    margin-top: 12px;
-    width: 100%;
-}
 
 /* ===== GIFT ===== */
 .locked { color: #888; }
@@ -168,8 +208,10 @@ body.dark .modal-content {
 </head>
 
 <body>
+<div id="stars"></div>
+
 <div class="app">
-    <h1>🔥 Rabsi's Nail-Streak</h1>
+    <h1 id="title">🔥 Rabsi's Nail-Streak</h1>
 
     <button id="darkToggle">🌙 Dunkler Modus</button>
     <button id="statsBtn">📊 Statistik</button>
@@ -203,15 +245,35 @@ body.dark .modal-content {
         <select id="monthSelect" style="width:100%;margin-bottom:10px;"></select>
         <div id="statsSummary"></div>
         <div class="stats-grid" id="statsGrid"></div>
-        <button class="close" onclick="closeStats()">Schließen</button>
+        <button onclick="closeStats()">Schließen</button>
     </div>
 </div>
 
 <script>
+/* ===== STERNE ===== */
+const starsContainer = document.getElementById("stars");
+function createStars(count = 40) {
+    starsContainer.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        const star = document.createElement("div");
+        star.className = "star";
+        star.style.left = Math.random() * 100 + "vw";
+        star.style.top = Math.random() * 100 + "vh";
+        star.style.animationDuration = 20 + Math.random() * 20 + "s";
+        star.style.animationDelay = Math.random() * 20 + "s";
+        starsContainer.appendChild(star);
+    }
+}
+createStars();
+
 /* ===== BASIS ===== */
 const today = new Date();
 const STORAGE_KEY = "rabsi_nail_streak_all_year";
 const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+let year = today.getFullYear();
+let month = today.getMonth();
+let daysInMonth = new Date(year, month + 1, 0).getDate();
 
 /* ===== ELEMENTE ===== */
 const calendar = document.getElementById("calendar");
@@ -221,12 +283,9 @@ const btnYes = document.getElementById("btnYes");
 const btnNo = document.getElementById("btnNo");
 const monthTitle = document.getElementById("monthTitle");
 const darkToggle = document.getElementById("darkToggle");
+const title = document.getElementById("title");
 
-/* ===== AKTUELLER MONAT ===== */
-let year = today.getFullYear();
-let month = today.getMonth();
-let daysInMonth = new Date(year, month + 1, 0).getDate();
-
+/* ===== MONAT ===== */
 monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
 
 function keyFor(y, m, d) {
@@ -238,7 +297,6 @@ function buildCalendar() {
     calendar.innerHTML = "";
     const firstDay = new Date(year, month, 1).getDay();
     const offset = (firstDay + 6) % 7;
-
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -288,7 +346,7 @@ function checkGift() {
     giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
 }
 
-/* ===== SPEICHERN ===== */
+/* ===== SPEICHERN + ANIMATION ===== */
 function saveToday(result) {
     const key = keyFor(year, month, today.getDate());
     if (data[key]) return;
@@ -299,6 +357,8 @@ function saveToday(result) {
     buildCalendar();
     updateStreak();
     checkGift();
+    streakBox.classList.add("pop");
+    setTimeout(() => streakBox.classList.remove("pop"), 400);
 }
 
 btnYes.onclick = () => saveToday("success");
@@ -314,7 +374,9 @@ function applyDark(on) {
     document.body.classList.toggle("dark", on);
     localStorage.setItem("rabsiDarkMode", on ? "1" : "0");
     darkToggle.textContent = on ? "☀️ Heller Modus" : "🌙 Dunkler Modus";
+    title.textContent = on ? "💜 Rabsi's Nail-Streak" : "🔥 Rabsi's Nail-Streak";
 }
+
 applyDark(localStorage.getItem("rabsiDarkMode") === "1");
 darkToggle.onclick = () => applyDark(!document.body.classList.contains("dark"));
 
@@ -399,5 +461,3 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
-
-
