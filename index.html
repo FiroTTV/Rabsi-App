@@ -8,188 +8,138 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#7a5cff">
 
-<!-- Firebase (compat) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: system-ui, sans-serif;
-    min-height: 100vh;
-    overflow-y: auto;
+html,body{
+    margin:0;
+    padding:0;
+    font-family:system-ui,sans-serif;
+    min-height:100vh;
 }
-body {
-    background: linear-gradient(135deg, #ffd6e8, #e6dbff);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 24px 0;
+body{
+    background:linear-gradient(135deg,#ffd6e8,#e6dbff);
+    display:flex;
+    justify-content:center;
+    padding:24px 0;
 }
-body.dark {
-    background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
+body.dark{
+    background:linear-gradient(135deg,#2b1d3a,#1e1e2f,#2a1f4f);
+}
+.hidden{display:none}
+
+#stars{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:0;
+}
+body.dark #stars{opacity:1}
+.star{
+    position:absolute;
+    width:2px;height:2px;
+    background:radial-gradient(circle,#fff,#c7b3ff);
+    border-radius:50%;
+    animation:floatStar linear infinite;
+}
+@keyframes floatStar{
+    from{transform:translateY(0);opacity:.2}
+    to{transform:translateY(-100vh);opacity:1}
 }
 
-/* ===== STARS ===== */
-#stars {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0;
+.app{
+    background:white;
+    max-width:420px;
+    width:100%;
+    border-radius:24px;
+    padding:24px;
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
 }
-body.dark #stars { opacity: 1; }
-.star {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: radial-gradient(circle, #fff, #c7b3ff);
-    border-radius: 50%;
-    animation: floatStar linear infinite;
-}
-@keyframes floatStar {
-    from { transform: translateY(0); opacity: 0.2; }
-    to { transform: translateY(-100vh); opacity: 1; }
+body.dark .app{
+    background:#1f1b2e;
+    color:#fff;
 }
 
-/* ===== APP ===== */
-.app {
-    position: relative;
-    z-index: 2;
-    background: white;
-    width: 100%;
-    max-width: 420px;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
-body.dark .app {
-    background: linear-gradient(180deg, #1f1b2e, #181826);
-    color: #f0f0f0;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6),
-                0 0 40px rgba(122,92,255,0.15);
-}
-.hidden { display: none; }
+h1{text-align:center;margin-bottom:8px}
 
-h1 { text-align: center; margin-bottom: 8px; }
-.subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 16px;
+button{
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:none;
+    font-weight:600;
+    margin-bottom:10px;
 }
-body.dark .subtitle { color: #aaa; }
+.buttons{display:flex;gap:10px}
+.buttons button{width:50%}
+.yes{background:#7be495}
+.no{background:#ff8a8a}
+button:disabled{opacity:.5}
 
-/* ===== STREAK ===== */
-.streak {
-    text-align: center;
-    background: #f6f6ff;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 16px;
-    font-size: 20px;
-    font-weight: 700;
+.weekdays,.calendar{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
 }
-body.dark .streak { background: #2a2a3d; }
+.weekdays{font-size:12px;opacity:.7;margin-bottom:6px;text-align:center}
+.calendar{margin-bottom:16px}
+.day{
+    aspect-ratio:1/1;
+    border-radius:12px;
+    background:#eee;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+body.dark .day{background:#333}
+.success{background:#4cd964!important}
+.fail{background:#ff5c5c!important}
+.today{outline:3px solid #7a5cff}
 
-/* ===== BUTTONS ===== */
-button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 14px;
-    border: none;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 10px;
+.streak{
+    text-align:center;
+    background:#f6f6ff;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:16px;
+    font-weight:700;
 }
-.buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-.buttons button { width: 50%; margin-bottom: 0; }
-.yes { background: #7be495; }
-.no { background: #ff8a8a; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
+body.dark .streak{background:#2a2a3d}
 
-/* ===== CALENDAR ===== */
-.weekdays, .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+.gift{
+    text-align:center;
+    padding:14px;
+    border-radius:14px;
+    background:#f6f6ff;
 }
-.weekdays {
-    font-size: 12px;
-    text-align: center;
-    opacity: 0.7;
-    margin-bottom: 6px;
-}
-.calendar { margin-bottom: 16px; }
-.day {
-    aspect-ratio: 1 / 1;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    background: #eee;
-}
-body.dark .day { background: #333; }
-.future { background: #bbb; }
-.success { background: #4cd964 !important; }
-.fail { background: #ff5c5c !important; }
-.today { outline: 3px solid #7a5cff; }
-
-/* ===== GIFT ===== */
-.gift {
-    text-align: center;
-    padding: 14px;
-    border-radius: 14px;
-    background: #f6f6ff;
-}
-body.dark .gift { background: #2a2a3d; }
-.locked { color: #888; }
-.unlocked {
-    background: linear-gradient(135deg, gold, orange);
-    font-weight: 700;
+body.dark .gift{background:#2a2a3d}
+.locked{color:#888}
+.unlocked{
+    background:linear-gradient(135deg,gold,orange);
+    font-weight:700;
 }
 
-/* ===== MODAL ===== */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
 }
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
+.modal-content{
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    width:90%;
+    max-width:400px;
 }
-body.dark .modal-content {
-    background: #1c1c28;
-    color: #fff;
-}
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin: 12px 0;
-}
-.stats-grid div {
-    aspect-ratio: 1/1;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+body.dark .modal-content{
+    background:#1c1c28;
+    color:#fff;
 }
 </style>
 </head>
@@ -207,281 +157,179 @@ body.dark .modal-content {
 
 <!-- APP -->
 <div class="app hidden" id="appBox">
-    <h1 id="title">🔥 Rabsi's Nail-Streak</h1>
+    <h1>🔥 Rabsi's Nail-Streak</h1>
 
-    <button id="darkToggle">🌙 Dunkler Modus</button>
-    <button id="statsBtn">📊 Statistik</button>
-    <button id="adminToggle">👑 Admin-Modus: AUS</button>
+    <button onclick="openAccount()">⚙️ Account</button>
+    <button onclick="toggleDark()">🌙 Dark Mode</button>
 
-    <div class="subtitle" id="monthTitle"></div>
     <div class="streak" id="streakBox">🔥 0 Tage Streak</div>
 
     <div class="weekdays">
         <div>Mo</div><div>Di</div><div>Mi</div>
         <div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
     </div>
-
     <div class="calendar" id="calendar"></div>
 
     <div class="buttons">
-        <button class="yes" id="btnYes">Heute nicht gekaut ✅</button>
-        <button class="no" id="btnNo">Heute gekaut ❌</button>
+        <button class="yes" id="btnYes">Heute nicht gekaut</button>
+        <button class="no" id="btnNo">Heute gekaut</button>
     </div>
 
     <div class="gift locked" id="giftBox"></div>
-
-    <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<!-- STATISTIK MODAL -->
-<div class="modal" id="statsModal">
+<!-- ACCOUNT -->
+<div class="modal" id="accountModal">
     <div class="modal-content">
-        <h2>📊 Statistik</h2>
-        <select id="monthSelect" style="width:100%;margin-bottom:10px;"></select>
-        <div id="statsSummary"></div>
-        <div class="stats-grid" id="statsGrid"></div>
-        <button onclick="closeStats()">Schließen</button>
+        <h2>⚙️ Account</h2>
+        <p><b>E-Mail:</b> <span id="accEmail"></span></p>
+        <p><b>User-ID:</b><br><small id="accUid"></small></p>
+        <p><b>Gespeicherte Tage:</b> <span id="accDays"></span></p>
+        <p><b>Admin:</b> <span id="accAdmin"></span></p>
+
+        <button onclick="toggleAdmin()">👑 Admin umschalten</button>
+        <button onclick="resetPassword()">🔁 Passwort zurücksetzen</button>
+        <button onclick="logout()">🚪 Logout</button>
+        <button onclick="closeAccount()">Schließen</button>
     </div>
 </div>
 
 <script>
-/* ===== FIREBASE ===== */
+/* Firebase */
 firebase.initializeApp({
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
   authDomain: "rabsi-nail-streak.firebaseapp.com",
   projectId: "rabsi-nail-streak",
   appId: "1:261656631522:web:9b79c2cbc0e1e8790126bb"
 });
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-/* ===== STARS ===== */
-const stars = document.getElementById("stars");
-for (let i = 0; i < 40; i++) {
-    const s = document.createElement("div");
-    s.className = "star";
-    s.style.left = Math.random() * 100 + "vw";
-    s.style.top = Math.random() * 100 + "vh";
-    s.style.animationDuration = 20 + Math.random() * 20 + "s";
-    stars.appendChild(s);
+/* Stars */
+for(let i=0;i<40;i++){
+ const s=document.createElement("div");
+ s.className="star";
+ s.style.left=Math.random()*100+"vw";
+ s.style.top=Math.random()*100+"vh";
+ s.style.animationDuration=20+Math.random()*20+"s";
+ stars.appendChild(s);
 }
 
-/* ===== DATA ===== */
-let data = {};
-const today = new Date();
-const hour = today.getHours();
-const year = today.getFullYear();
-const month = today.getMonth();
-const daysInMonth = new Date(year, month + 1, 0).getDate();
+/* State */
+let data={};
+let isAdmin=localStorage.getItem("rabsiAdmin")==="1";
+const today=new Date();
+const year=today.getFullYear();
+const month=today.getMonth();
+const daysInMonth=new Date(year,month+1,0).getDate();
 
-/* ===== ADMIN ===== */
-let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
-
-/* ===== ELEMENTS ===== */
-const calendar = document.getElementById("calendar");
-const streakBox = document.getElementById("streakBox");
-const giftBox = document.getElementById("giftBox");
-const btnYes = document.getElementById("btnYes");
-const btnNo = document.getElementById("btnNo");
-const monthTitle = document.getElementById("monthTitle");
-const darkToggle = document.getElementById("darkToggle");
-const title = document.getElementById("title");
-const adminToggle = document.getElementById("adminToggle");
-
-/* ===== TIME LOCK ===== */
-function applyTimeLock() {
-    if (hour < 20 && !isAdmin) {
-        btnYes.disabled = true;
-        btnNo.disabled = true;
-        btnYes.textContent = "⏰ Ab 20:00 Uhr";
-        btnNo.textContent = "⏰ Ab 20:00 Uhr";
-    } else {
-        btnYes.disabled = false;
-        btnNo.disabled = false;
-        btnYes.textContent = "Heute nicht gekaut ✅";
-        btnNo.textContent = "Heute gekaut ❌";
-    }
+/* Helpers */
+function keyFor(d){
+ return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
 }
 
-/* ===== ADMIN UI ===== */
-function updateAdminUI() {
-    adminToggle.textContent = isAdmin
-        ? "👑 Admin-Modus: AN"
-        : "👑 Admin-Modus: AUS";
-    applyTimeLock();
-}
-adminToggle.onclick = () => {
-    isAdmin = !isAdmin;
-    localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
-    updateAdminUI();
-};
+/* Auth */
+auth.onAuthStateChanged(user=>{
+ if(!user){
+  loginBox.classList.remove("hidden");
+  appBox.classList.add("hidden");
+  return;
+ }
+ loginBox.classList.add("hidden");
+ appBox.classList.remove("hidden");
 
-/* ===== HELPERS ===== */
-monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
-function keyFor(d) {
-    return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-}
+ accEmail.textContent=user.email;
+ accUid.textContent=user.uid;
 
-/* ===== CALENDAR ===== */
-function buildCalendar() {
-    calendar.innerHTML = "";
-    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
-    for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
-
-    for (let d = 1; d <= daysInMonth; d++) {
-        const el = document.createElement("div");
-        el.className = "day";
-        el.textContent = d;
-
-        const key = keyFor(d);
-        const date = new Date(year, month, d);
-
-        if (date > today) el.classList.add("future");
-        if (data[key] === "success") el.classList.add("success");
-        if (data[key] === "fail") el.classList.add("fail");
-        if (d === today.getDate()) el.classList.add("today");
-
-        calendar.appendChild(el);
-    }
-}
-
-/* ===== STREAK ===== */
-function updateStreak() {
-    const todayKey = keyFor(today.getDate());
-    if (data[todayKey] !== "success") {
-        streakBox.textContent = "🔥 0 Tage Streak";
-        return;
-    }
-    let streak = 0;
-    for (let d = today.getDate(); d >= 1; d--) {
-        if (data[keyFor(d)] === "success") streak++;
-        else break;
-    }
-    streakBox.textContent = `🔥 ${streak} Tage Streak`;
-}
-
-/* ===== GIFT ===== */
-function checkGift() {
-    for (let d = 1; d <= daysInMonth; d++) {
-        if (data[keyFor(d)] !== "success") {
-            giftBox.className = "gift locked";
-            giftBox.innerHTML = "🔒 Geschenk gesperrt<br>Noch nicht alle Tage geschafft";
-            return;
-        }
-    }
-    giftBox.className = "gift unlocked";
-    giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
-}
-
-/* ===== SAVE ===== */
-function saveToday(result) {
-    const key = keyFor(today.getDate());
-    if (data[key]) return;
-    data[key] = result;
-    db.collection("users").doc(auth.currentUser.uid).set({
-        streakData: data
-    }, { merge: true });
-}
-
-/* ===== BUTTONS ===== */
-btnYes.onclick = () => saveToday("success");
-btnNo.onclick = () => saveToday("fail");
-
-/* ===== DARK MODE ===== */
-function applyDark(on) {
-    document.body.classList.toggle("dark", on);
-    darkToggle.textContent = on ? "☀️ Heller Modus" : "🌙 Dunkler Modus";
-    title.textContent = on ? "💜 Rabsi's Nail-Streak" : "🔥 Rabsi's Nail-Streak";
-}
-darkToggle.onclick = () => applyDark(!document.body.classList.contains("dark"));
-
-/* ===== STATISTIK ===== */
-const statsBtn = document.getElementById("statsBtn");
-const statsModal = document.getElementById("statsModal");
-const monthSelect = document.getElementById("monthSelect");
-const statsGrid = document.getElementById("statsGrid");
-const statsSummary = document.getElementById("statsSummary");
-
-statsBtn.onclick = () => {
-    buildMonthOptions();
-    renderStats(monthSelect.value);
-    statsModal.style.display = "flex";
-};
-function closeStats() { statsModal.style.display = "none"; }
-
-function buildMonthOptions() {
-    monthSelect.innerHTML = "";
-    const months = [...new Set(Object.keys(data).map(k => k.slice(0,7)))].sort();
-    months.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
-        monthSelect.appendChild(opt);
-    });
-    monthSelect.onchange = () => renderStats(monthSelect.value);
-}
-
-function renderStats(monthKey) {
-    statsGrid.innerHTML = "";
-    let success = 0, fail = 0, longest = 0, current = 0;
-
-    const [y, m] = monthKey.split("-").map(Number);
-    const dim = new Date(y, m, 0).getDate();
-
-    for (let d = 1; d <= dim; d++) {
-        const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const cell = document.createElement("div");
-        cell.textContent = d;
-
-        if (data[key] === "success") {
-            cell.style.background = "#4cd964";
-            success++; current++; longest = Math.max(longest, current);
-        } else if (data[key] === "fail") {
-            cell.style.background = "#ff5c5c";
-            fail++; current = 0;
-        } else current = 0;
-
-        statsGrid.appendChild(cell);
-    }
-
-    const total = success + fail;
-    const percent = total ? Math.round((success / total) * 100) : 0;
-
-    statsSummary.innerHTML = `
-        🟢 ${success} Tage clean<br>
-        🔴 ${fail} Tage gekaut<br>
-        📈 ${percent}% clean<br>
-        🔥 Längste Streak: ${longest}
-    `;
-}
-
-/* ===== AUTH STATE ===== */
-auth.onAuthStateChanged(user => {
-    if (!user) {
-        loginBox.classList.remove("hidden");
-        appBox.classList.add("hidden");
-        return;
-    }
-    loginBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
-
-    db.collection("users").doc(user.uid).onSnapshot(doc => {
-        data = doc.data()?.streakData || {};
-        buildCalendar();
-        updateStreak();
-        checkGift();
-        updateAdminUI();
-    });
+ db.collection("users").doc(user.uid).onSnapshot(doc=>{
+  data=doc.data()?.streakData||{};
+  accDays.textContent=Object.keys(data).length;
+  accAdmin.textContent=isAdmin?"AN":"AUS";
+  render();
+ });
 });
 
-/* ===== LOGIN ===== */
-function login() {
-    const e = email.value;
-    const p = password.value;
-    auth.signInWithEmailAndPassword(e, p)
-        .catch(() => auth.createUserWithEmailAndPassword(e, p));
+/* Render */
+function render(){
+ calendar.innerHTML="";
+ let streak=0;
+
+ for(let d=1;d<=daysInMonth;d++){
+  const el=document.createElement("div");
+  el.className="day";
+  el.textContent=d;
+  if(data[keyFor(d)]==="success") el.classList.add("success");
+  if(data[keyFor(d)]==="fail") el.classList.add("fail");
+  if(d===today.getDate()) el.classList.add("today");
+  calendar.appendChild(el);
+ }
+
+ for(let d=today.getDate();d>=1;d--){
+  if(data[keyFor(d)]==="success") streak++;
+  else break;
+ }
+ streakBox.textContent=`🔥 ${streak} Tage Streak`;
+
+ checkGift();
+ applyTimeLock();
 }
-function logout() { auth.signOut(); }
+
+/* Gift */
+function checkGift(){
+ for(let d=1;d<=daysInMonth;d++){
+  if(data[keyFor(d)]!=="success"){
+   giftBox.className="gift locked";
+   giftBox.innerHTML="🔒 Geschenk gesperrt";
+   return;
+  }
+ }
+ giftBox.className="gift unlocked";
+ giftBox.innerHTML="🎁 Geschenk freigeschaltet 🎉<br><br>Rabsi, ich bin stolz auf dich 💖";
+}
+
+/* Save */
+function save(res){
+ const k=keyFor(today.getDate());
+ if(data[k])return;
+ if(today.getHours()<20 && !isAdmin)return;
+ data[k]=res;
+ db.collection("users").doc(auth.currentUser.uid).set({streakData:data},{merge:true});
+}
+btnYes.onclick=()=>save("success");
+btnNo.onclick=()=>save("fail");
+
+/* Time lock */
+function applyTimeLock(){
+ const locked=today.getHours()<20&&!isAdmin;
+ btnYes.disabled=locked;
+ btnNo.disabled=locked;
+}
+
+/* Account */
+function openAccount(){accountModal.style.display="flex"}
+function closeAccount(){accountModal.style.display="none"}
+function toggleAdmin(){
+ isAdmin=!isAdmin;
+ localStorage.setItem("rabsiAdmin",isAdmin?"1":"0");
+ accAdmin.textContent=isAdmin?"AN":"AUS";
+ applyTimeLock();
+}
+function resetPassword(){
+ auth.sendPasswordResetEmail(auth.currentUser.email);
+ alert("E-Mail zum Zurücksetzen gesendet");
+}
+
+/* Login */
+function login(){
+ auth.signInWithEmailAndPassword(email.value,password.value)
+ .catch(()=>auth.createUserWithEmailAndPassword(email.value,password.value));
+}
+function logout(){auth.signOut()}
+
+/* Dark */
+function toggleDark(){
+ document.body.classList.toggle("dark");
+}
 </script>
 </body>
 </html>
