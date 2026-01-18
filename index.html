@@ -14,7 +14,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-/* ===== ORIGINAL CSS (UNVERÄNDERT) ===== */
 html, body {
     margin: 0;
     padding: 0;
@@ -69,9 +68,6 @@ body.dark #stars { opacity: 1; }
 body.dark .app {
     background: linear-gradient(180deg, #1f1b2e, #181826);
     color: #f0f0f0;
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.6),
-        0 0 40px rgba(122,92,255,0.15);
 }
 .hidden { display: none; }
 
@@ -254,7 +250,25 @@ body.dark .modal-content {
         <p><b>E-Mail:</b> <span id="accEmail"></span></p>
         <p><b>User-ID:</b><br><small id="accUid"></small></p>
         <p><b>Gespeicherte Tage:</b> <span id="accDays"></span></p>
-        <p><b>Admin-Modus:</b> <span id="accAdmin"></span></p>
+        <p><b>Admin:</b> <span id="accAdmin"></span></p>
+
+        <hr>
+        <h3>👑 Admin: Account bearbeiten</h3>
+
+        <input id="editEmail" placeholder="E-Mail des Accounts"
+               style="width:100%;padding:10px;margin-bottom:6px">
+
+        <input id="editDate" type="date"
+               style="width:100%;padding:10px;margin-bottom:6px">
+
+        <select id="editValue"
+                style="width:100%;padding:10px;margin-bottom:10px">
+            <option value="success">✅ clean</option>
+            <option value="fail">❌ gekaut</option>
+            <option value="">⬜ löschen</option>
+        </select>
+
+        <button onclick="adminEditProgress()">💾 Progress setzen</button>
 
         <button onclick="toggleAdmin()">👑 Admin umschalten</button>
         <button onclick="resetPassword()">🔁 Passwort zurücksetzen</button>
@@ -405,6 +419,7 @@ function saveToday(result) {
     if (data[key]) return;
     data[key] = result;
     db.collection("users").doc(auth.currentUser.uid).set({
+        email: auth.currentUser.email,
         streakData: data
     }, { merge: true });
 }
@@ -482,12 +497,8 @@ function renderStats(monthKey) {
 }
 
 /* ===== ACCOUNT ===== */
-function openAccount() {
-    accountModal.style.display = "flex";
-}
-function closeAccount() {
-    accountModal.style.display = "none";
-}
+function openAccount() { accountModal.style.display = "flex"; }
+function closeAccount() { accountModal.style.display = "none"; }
 function toggleAdmin() {
     isAdmin = !isAdmin;
     localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
@@ -496,6 +507,49 @@ function toggleAdmin() {
 function resetPassword() {
     auth.sendPasswordResetEmail(auth.currentUser.email);
     alert("E-Mail zum Zurücksetzen wurde gesendet");
+}
+
+/* ===== ADMIN EDIT OTHER ACCOUNTS ===== */
+async function adminEditProgress() {
+    if (!isAdmin) {
+        alert("Nur Admins dürfen das");
+        return;
+    }
+
+    const email = document.getElementById("editEmail").value.trim();
+    const date = document.getElementById("editDate").value;
+    const value = document.getElementById("editValue").value;
+
+    if (!email || !date) {
+        alert("E-Mail und Datum angeben");
+        return;
+    }
+
+    const snap = await db.collection("users")
+        .where("email", "==", email)
+        .limit(1)
+        .get();
+
+    if (snap.empty) {
+        alert("Account nicht gefunden");
+        return;
+    }
+
+    const doc = snap.docs[0];
+    const uid = doc.id;
+    const userData = doc.data().streakData || {};
+
+    const d = new Date(date);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+    if (value === "") delete userData[key];
+    else userData[key] = value;
+
+    await db.collection("users").doc(uid).set({
+        streakData: userData
+    }, { merge: true });
+
+    alert("✅ Progress aktualisiert");
 }
 
 /* ===== AUTH STATE ===== */
