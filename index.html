@@ -588,21 +588,40 @@ auth.onAuthStateChanged(user => {
 });
 
 /* ===== LOGIN ===== */
-function login() {
-    const e = email.value;
-    const p = password.value;
+async function login() {
+    const e = email.value.trim();
+    const p = password.value.trim();
 
-    authReady.then(() => {
-        auth.signInWithEmailAndPassword(e, p)
-            .catch(() =>
-                auth.createUserWithEmailAndPassword(e, p)
-            );
-    });
+    if (!e || !p) {
+        alert("Bitte E-Mail und Passwort eingeben");
+        return;
+    }
+
+    try {
+        // 🔥 iOS-FIX: Persistence erst beim Klick setzen
+        await auth.setPersistence(
+            firebase.auth.Auth.Persistence.LOCAL
+        );
+
+        await auth.signInWithEmailAndPassword(e, p);
+    } catch (err) {
+        if (err.code === "auth/user-not-found") {
+            try {
+                await auth.createUserWithEmailAndPassword(e, p);
+            } catch (e2) {
+                alert(e2.message);
+            }
+        } else {
+            alert(err.message);
+        }
+    }
 }
+
 function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
 
 
