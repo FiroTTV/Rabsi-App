@@ -12,7 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
+
 <style>
 html, body {
     margin: 0;
@@ -21,7 +21,6 @@ html, body {
     min-height: 100vh;
     overflow-y: auto;
 }
-
 body {
     background: linear-gradient(135deg, #ffd6e8, #e6dbff);
     display: flex;
@@ -29,7 +28,6 @@ body {
     align-items: flex-start;
     padding: 24px 0;
 }
-
 body.dark {
     background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
 }
@@ -43,7 +41,6 @@ body.dark {
     opacity: 0;
 }
 body.dark #stars { opacity: 1; }
-
 .star {
     position: absolute;
     width: 2px;
@@ -52,7 +49,6 @@ body.dark #stars { opacity: 1; }
     border-radius: 50%;
     animation: floatStar linear infinite;
 }
-
 @keyframes floatStar {
     from { transform: translateY(0); opacity: 0.2; }
     to { transform: translateY(-100vh); opacity: 1; }
@@ -69,17 +65,16 @@ body.dark #stars { opacity: 1; }
     padding: 24px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
-
 body.dark .app {
     background: linear-gradient(180deg, #1f1b2e, #181826);
     color: #f0f0f0;
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.6),
-        0 0 40px rgba(122,92,255,0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6),
+                0 0 40px rgba(122,92,255,0.15);
 }
 
-h1 { text-align: center; margin-bottom: 8px; }
+.hidden { display: none; }
 
+h1 { text-align: center; margin-bottom: 8px; }
 .subtitle {
     text-align: center;
     color: #666;
@@ -110,29 +105,20 @@ button {
     cursor: pointer;
     margin-bottom: 10px;
 }
-
 .buttons {
     display: flex;
     gap: 10px;
     margin-bottom: 16px;
 }
-
 .buttons button {
     width: 50%;
     margin-bottom: 0;
 }
-
 .yes { background: #7be495; }
 .no { background: #ff8a8a; }
-
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-body.dark #darkToggle {
-    background: #3a2b5c;
-    color: #fff;
 }
 
 /* ===== WOCHENTAGE ===== */
@@ -152,7 +138,6 @@ body.dark #darkToggle {
     gap: 8px;
     margin-bottom: 16px;
 }
-
 .day {
     aspect-ratio: 1 / 1;
     border-radius: 12px;
@@ -162,7 +147,6 @@ body.dark #darkToggle {
     font-weight: 600;
     background: #eee;
 }
-
 body.dark .day { background: #333; }
 .future { background: #bbb; }
 .success { background: #4cd964 !important; }
@@ -177,7 +161,6 @@ body.dark .day { background: #333; }
     background: #f6f6ff;
 }
 body.dark .gift { background: #2a2a3d; }
-
 .locked { color: #888; }
 .unlocked {
     background: linear-gradient(135deg, gold, orange);
@@ -194,7 +177,6 @@ body.dark .gift { background: #2a2a3d; }
     align-items: center;
     z-index: 1000;
 }
-
 .modal-content {
     background: white;
     padding: 20px;
@@ -202,19 +184,16 @@ body.dark .gift { background: #2a2a3d; }
     width: 90%;
     max-width: 400px;
 }
-
 body.dark .modal-content {
     background: #1c1c28;
     color: #fff;
 }
-
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
     margin: 12px 0;
 }
-
 .stats-grid div {
     aspect-ratio: 1/1;
     border-radius: 8px;
@@ -229,7 +208,16 @@ body.dark .modal-content {
 <body>
 <div id="stars"></div>
 
-<div class="app">
+<!-- LOGIN -->
+<div class="app" id="loginBox">
+    <h1>💜 Rabsi Login</h1>
+    <input id="email" placeholder="E-Mail" style="width:100%;padding:12px;margin-bottom:10px">
+    <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin-bottom:10px">
+    <button onclick="login()">Einloggen / Registrieren</button>
+</div>
+
+<!-- APP -->
+<div class="app hidden" id="appBox">
     <h1 id="title">🔥 Rabsi's Nail-Streak</h1>
 
     <button id="darkToggle">🌙 Dunkler Modus</button>
@@ -251,13 +239,12 @@ body.dark .modal-content {
         <button class="no" id="btnNo">Heute gekaut ❌</button>
     </div>
 
-    <div class="gift locked" id="giftBox">
-        🔒 Geschenk gesperrt<br>
-        Noch nicht alle Tage geschafft
-    </div>
+    <div class="gift locked" id="giftBox"></div>
+
+    <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<!-- ===== STATISTIK MODAL ===== -->
+<!-- STATISTIK MODAL -->
 <div class="modal" id="statsModal">
     <div class="modal-content">
         <h2>📊 Statistik</h2>
@@ -269,7 +256,17 @@ body.dark .modal-content {
 </div>
 
 <script>
-/* ===== STERNE ===== */
+/* ===== FIREBASE ===== */
+firebase.initializeApp({
+  apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
+  authDomain: "rabsi-nail-streak.firebaseapp.com",
+  projectId: "rabsi-nail-streak",
+  appId: "1:261656631522:web:9b79c2cbc0e1e8790126bb"
+});
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ===== STARS ===== */
 const stars = document.getElementById("stars");
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div");
@@ -280,13 +277,10 @@ for (let i = 0; i < 40; i++) {
     stars.appendChild(s);
 }
 
-/* ===== BASIS ===== */
+/* ===== DATE / DATA ===== */
+let data = {};
 const today = new Date();
 const hour = today.getHours();
-
-const STORAGE_KEY = "rabsi_nail_streak_all_year";
-const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-
 const year = today.getFullYear();
 const month = today.getMonth();
 const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -300,7 +294,7 @@ const monthTitle = document.getElementById("monthTitle");
 const darkToggle = document.getElementById("darkToggle");
 const title = document.getElementById("title");
 
-/* ===== 20-UHR-SPERRE (NUR ABHAKEN) ===== */
+/* ===== 20 UHR SPERRE ===== */
 if (hour < 20) {
     btnYes.disabled = true;
     btnNo.disabled = true;
@@ -308,19 +302,16 @@ if (hour < 20) {
     btnNo.textContent = "⏰ Ab 20:00 Uhr";
 }
 
-/* ===== MONAT ===== */
 monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
 
 function keyFor(d) {
     return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
 }
 
-/* ===== KALENDER ===== */
+/* ===== CALENDAR ===== */
 function buildCalendar() {
     calendar.innerHTML = "";
-    const firstDay = new Date(year, month, 1).getDay();
-    const offset = (firstDay + 6) % 7;
-
+    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -347,7 +338,6 @@ function updateStreak() {
         streakBox.textContent = "🔥 0 Tage Streak";
         return;
     }
-
     let streak = 0;
     for (let d = today.getDate(); d >= 1; d--) {
         if (data[keyFor(d)] === "success") streak++;
@@ -356,7 +346,7 @@ function updateStreak() {
     streakBox.textContent = `🔥 ${streak} Tage Streak`;
 }
 
-/* ===== GESCHENK ===== */
+/* ===== GIFT ===== */
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
         if (data[keyFor(d)] !== "success") {
@@ -373,29 +363,22 @@ function checkGift() {
 function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
-
     data[key] = result;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-    btnYes.disabled = true;
-    btnNo.disabled = true;
-
-    buildCalendar();
-    updateStreak();
-    checkGift();
+    db.collection("users").doc(auth.currentUser.uid).set({
+        streakData: data
+    }, { merge: true });
 }
 
+/* ===== BUTTONS ===== */
 btnYes.onclick = () => saveToday("success");
 btnNo.onclick = () => saveToday("fail");
 
 /* ===== DARK MODE ===== */
 function applyDark(on) {
     document.body.classList.toggle("dark", on);
-    localStorage.setItem("rabsiDarkMode", on ? "1" : "0");
     darkToggle.textContent = on ? "☀️ Heller Modus" : "🌙 Dunkler Modus";
     title.textContent = on ? "💜 Rabsi's Nail-Streak" : "🔥 Rabsi's Nail-Streak";
 }
-applyDark(localStorage.getItem("rabsiDarkMode") === "1");
 darkToggle.onclick = () => applyDark(!document.body.classList.contains("dark"));
 
 /* ===== STATISTIK ===== */
@@ -410,15 +393,11 @@ statsBtn.onclick = () => {
     renderStats(monthSelect.value);
     statsModal.style.display = "flex";
 };
-
-function closeStats() {
-    statsModal.style.display = "none";
-}
+function closeStats() { statsModal.style.display = "none"; }
 
 function buildMonthOptions() {
     monthSelect.innerHTML = "";
-    const keys = Object.keys(data);
-    const months = [...new Set(keys.map(k => k.slice(0,7)))].sort();
+    const months = [...new Set(Object.keys(data).map(k => k.slice(0,7)))].sort();
     months.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m;
@@ -446,30 +425,48 @@ function renderStats(monthKey) {
         } else if (data[key] === "fail") {
             cell.style.background = "#ff5c5c";
             fail++; current = 0;
-        } else {
-            current = 0;
-        }
+        } else current = 0;
+
         statsGrid.appendChild(cell);
     }
 
     const total = success + fail;
     const percent = total ? Math.round((success / total) * 100) : 0;
-    const gift = success === dim ? "✅" : "❌";
 
     statsSummary.innerHTML = `
         🟢 ${success} Tage clean<br>
         🔴 ${fail} Tage gekaut<br>
         📈 ${percent}% clean<br>
-        🔥 Längste Streak: ${longest}<br>
-        🎁 Geschenk: ${gift}
+        🔥 Längste Streak: ${longest}
     `;
 }
 
-/* ===== INIT ===== */
-buildCalendar();
-updateStreak();
-checkGift();
+/* ===== AUTH STATE ===== */
+auth.onAuthStateChanged(user => {
+    if (!user) {
+        loginBox.classList.remove("hidden");
+        appBox.classList.add("hidden");
+        return;
+    }
+    loginBox.classList.add("hidden");
+    appBox.classList.remove("hidden");
+
+    db.collection("users").doc(user.uid).onSnapshot(doc => {
+        data = doc.data()?.streakData || {};
+        buildCalendar();
+        updateStreak();
+        checkGift();
+    });
+});
+
+/* ===== LOGIN ===== */
+function login() {
+    const e = email.value;
+    const p = password.value;
+    auth.signInWithEmailAndPassword(e, p)
+        .catch(() => auth.createUserWithEmailAndPassword(e, p));
+}
+function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
-
