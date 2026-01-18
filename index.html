@@ -240,7 +240,7 @@ body.dark .modal-content {
 
     <div class="subtitle" id="monthTitle"></div>
 
-    <div class="streak" id="streakBox">🔥 0 Tage clean</div>
+    <div class="streak" id="streakBox">🔥 0 Tage Streak</div>
 
     <div class="weekdays">
         <div>Mo</div><div>Di</div><div>Mi</div>
@@ -345,7 +345,7 @@ function buildCalendar() {
 function updateStreak() {
     const todayKey = keyFor(year, month, today.getDate());
     if (data[todayKey] !== "success") {
-        streakBox.textContent = "🔥 0 Tage clean";
+        streakBox.textContent = "🔥 0 Tage Streak";
         return;
     }
     let streak = 0;
@@ -353,7 +353,7 @@ function updateStreak() {
         if (data[keyFor(year, month, d)] === "success") streak++;
         else break;
     }
-    streakBox.textContent = `🔥 ${streak} Tage clean`;
+    streakBox.textContent = `🔥 ${streak} Tage Streak`;
 }
 
 /* ===== GESCHENK ===== */
@@ -463,7 +463,7 @@ function renderStats(monthKey) {
     const gift = success === dim ? "✅" : "❌";
 
     statsSummary.innerHTML = `
-        🟢 ${success} Tage clean<br>
+        🟢 ${success} Tage Streak<br>
         🔴 ${fail} Tage gekaut<br>
         📈 ${percent}% clean<br>
         🔥 Längste Streak: ${longest}<br>
@@ -482,3 +482,4 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
