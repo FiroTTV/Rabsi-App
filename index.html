@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#7a5cff">
 
 <style>
-/* ===== BASIS ===== */
 html, body {
     margin: 0;
     padding: 0;
@@ -26,29 +25,25 @@ body {
     padding: 24px 0;
 }
 
-/* ===== DARK MODE BACKGROUND ===== */
 body.dark {
     background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
 }
 
-/* ===== STERNE ===== */
+/* ===== STARS ===== */
 #stars {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
     opacity: 0;
-    transition: opacity 0.5s ease;
 }
-body.dark #stars {
-    opacity: 1;
-}
+body.dark #stars { opacity: 1; }
 
 .star {
     position: absolute;
     width: 2px;
     height: 2px;
-    background: radial-gradient(circle, #ffffff, #c7b3ff);
+    background: radial-gradient(circle, #fff, #c7b3ff);
     border-radius: 50%;
     animation: floatStar linear infinite;
 }
@@ -58,7 +53,7 @@ body.dark #stars {
     to { transform: translateY(-100vh); opacity: 1; }
 }
 
-/* ===== APP CARD ===== */
+/* ===== APP ===== */
 .app {
     position: relative;
     z-index: 2;
@@ -78,35 +73,52 @@ body.dark .app {
         0 0 40px rgba(122,92,255,0.15);
 }
 
-/* ===== TEXT ===== */
-h1 {
-    text-align: center;
-    margin-bottom: 8px;
-}
+h1 { text-align: center; margin-bottom: 8px; }
 
 .subtitle {
     text-align: center;
     color: #666;
     margin-bottom: 16px;
 }
+body.dark .subtitle { color: #aaa; }
 
-body.dark .subtitle {
-    color: #aaa;
-}
-
-/* ===== BOXEN ===== */
-.streak, .gift {
+/* ===== STREAK BOX ===== */
+.streak {
+    position: relative;
     text-align: center;
     background: #f6f6ff;
     border-radius: 14px;
     padding: 14px;
     margin-bottom: 16px;
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: 700;
+    overflow: hidden;
+}
+body.dark .streak { background: #2a2a3d; }
+
+/* ===== STREAK ANIMATION ===== */
+.streak.boom {
+    animation: boom 0.6s ease;
 }
 
-body.dark .streak,
-body.dark .gift {
-    background: #2a2a3d;
+@keyframes boom {
+    0%   { transform: scale(0.9); }
+    50%  { transform: scale(1.15); box-shadow: 0 0 25px rgba(122,92,255,0.8); }
+    100% { transform: scale(1); }
+}
+
+.spark {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: gold;
+    border-radius: 50%;
+    animation: spark 600ms ease-out forwards;
+}
+
+@keyframes spark {
+    from { transform: translate(0,0) scale(1); opacity: 1; }
+    to   { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
 }
 
 /* ===== BUTTONS ===== */
@@ -145,7 +157,7 @@ body.dark #darkToggle {
     color: #fff;
 }
 
-/* ===== WOCHENTAGE ===== */
+/* ===== CALENDAR ===== */
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -155,7 +167,6 @@ body.dark #darkToggle {
     margin-bottom: 6px;
 }
 
-/* ===== KALENDER ===== */
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -174,57 +185,24 @@ body.dark #darkToggle {
 }
 
 body.dark .day { background: #333; }
-
 .future { background: #bbb; }
 .success { background: #4cd964 !important; }
 .fail { background: #ff5c5c !important; }
 .today { outline: 3px solid #7a5cff; }
 
-/* ===== MODAL ===== */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
-}
-
-body.dark .modal-content {
-    background: #1c1c28;
-    color: #fff;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin: 12px 0;
-}
-
-.stats-grid div {
-    aspect-ratio: 1/1;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-}
-
 /* ===== GIFT ===== */
+.gift {
+    text-align: center;
+    padding: 14px;
+    border-radius: 14px;
+    background: #f6f6ff;
+}
+body.dark .gift { background: #2a2a3d; }
+
 .locked { color: #888; }
 .unlocked {
     background: linear-gradient(135deg, gold, orange);
-    font-weight: 600;
+    font-weight: 700;
 }
 </style>
 </head>
@@ -236,7 +214,6 @@ body.dark .modal-content {
     <h1 id="title">🔥 Rabsi's Nail-Streak</h1>
 
     <button id="darkToggle">🌙 Dunkler Modus</button>
-    <button id="statsBtn">📊 Statistik</button>
 
     <div class="subtitle" id="monthTitle"></div>
 
@@ -260,44 +237,29 @@ body.dark .modal-content {
     </div>
 </div>
 
-<!-- ===== STATISTIK ===== -->
-<div class="modal" id="statsModal">
-    <div class="modal-content">
-        <h2>📊 Statistik</h2>
-        <select id="monthSelect" style="width:100%;margin-bottom:10px;"></select>
-        <div id="statsSummary"></div>
-        <div class="stats-grid" id="statsGrid"></div>
-        <button onclick="closeStats()">Schließen</button>
-    </div>
-</div>
-
 <script>
-/* ===== STERNE ===== */
-const starsContainer = document.getElementById("stars");
-function createStars(count = 40) {
-    starsContainer.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-        const star = document.createElement("div");
-        star.className = "star";
-        star.style.left = Math.random() * 100 + "vw";
-        star.style.top = Math.random() * 100 + "vh";
-        star.style.animationDuration = 20 + Math.random() * 20 + "s";
-        star.style.animationDelay = Math.random() * 20 + "s";
-        starsContainer.appendChild(star);
-    }
+/* ===== STARS ===== */
+const stars = document.getElementById("stars");
+for (let i = 0; i < 40; i++) {
+    const s = document.createElement("div");
+    s.className = "star";
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.top = Math.random() * 100 + "vh";
+    s.style.animationDuration = 20 + Math.random() * 20 + "s";
+    stars.appendChild(s);
 }
-createStars();
 
 /* ===== BASIS ===== */
 const today = new Date();
+const hour = today.getHours();
+
 const STORAGE_KEY = "rabsi_nail_streak_all_year";
 const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
-let year = today.getFullYear();
-let month = today.getMonth();
-let daysInMonth = new Date(year, month + 1, 0).getDate();
+const year = today.getFullYear();
+const month = today.getMonth();
+const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-/* ===== ELEMENTE ===== */
 const calendar = document.getElementById("calendar");
 const streakBox = document.getElementById("streakBox");
 const giftBox = document.getElementById("giftBox");
@@ -307,14 +269,22 @@ const monthTitle = document.getElementById("monthTitle");
 const darkToggle = document.getElementById("darkToggle");
 const title = document.getElementById("title");
 
-/* ===== MONAT ===== */
-monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
-
-function keyFor(y, m, d) {
-    return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+/* ===== TIME LOCK (20:00) ===== */
+if (hour < 20) {
+    btnYes.disabled = true;
+    btnNo.disabled = true;
+    btnYes.textContent = "⏰ Ab 20:00 Uhr";
+    btnNo.textContent = "⏰ Ab 20:00 Uhr";
 }
 
-/* ===== KALENDER ===== */
+/* ===== MONTH ===== */
+monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
+
+function keyFor(d) {
+    return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+
+/* ===== CALENDAR ===== */
 function buildCalendar() {
     calendar.innerHTML = "";
     const firstDay = new Date(year, month, 1).getDay();
@@ -327,15 +297,13 @@ function buildCalendar() {
         el.className = "day";
         el.textContent = d;
 
-        const key = keyFor(year, month, d);
+        const key = keyFor(d);
         const date = new Date(year, month, d);
 
         if (date > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
-        if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-            el.classList.add("today");
-        }
+        if (d === today.getDate()) el.classList.add("today");
 
         calendar.appendChild(el);
     }
@@ -343,23 +311,24 @@ function buildCalendar() {
 
 /* ===== STREAK ===== */
 function updateStreak() {
-    const todayKey = keyFor(year, month, today.getDate());
+    const todayKey = keyFor(today.getDate());
     if (data[todayKey] !== "success") {
         streakBox.textContent = "🔥 0 Tage Streak";
         return;
     }
+
     let streak = 0;
     for (let d = today.getDate(); d >= 1; d--) {
-        if (data[keyFor(year, month, d)] === "success") streak++;
+        if (data[keyFor(d)] === "success") streak++;
         else break;
     }
     streakBox.textContent = `🔥 ${streak} Tage Streak`;
 }
 
-/* ===== GESCHENK ===== */
+/* ===== GIFT ===== */
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
-        if (data[keyFor(year, month, d)] !== "success") {
+        if (data[keyFor(d)] !== "success") {
             giftBox.className = "gift locked";
             giftBox.innerHTML = "🔒 Geschenk gesperrt<br>Noch nicht alle Tage geschafft";
             return;
@@ -369,26 +338,38 @@ function checkGift() {
     giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
 }
 
-/* ===== SPEICHERN ===== */
+/* ===== SAVE + ANIMATION ===== */
+function celebrate() {
+    streakBox.classList.add("boom");
+    for (let i = 0; i < 12; i++) {
+        const spark = document.createElement("div");
+        spark.className = "spark";
+        spark.style.setProperty("--x", (Math.random()*120-60)+"px");
+        spark.style.setProperty("--y", (Math.random()*-120)+"px");
+        streakBox.appendChild(spark);
+        setTimeout(() => spark.remove(), 600);
+    }
+    setTimeout(() => streakBox.classList.remove("boom"), 600);
+}
+
 function saveToday(result) {
-    const key = keyFor(year, month, today.getDate());
+    const key = keyFor(today.getDate());
     if (data[key]) return;
+
     data[key] = result;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
     btnYes.disabled = true;
     btnNo.disabled = true;
+
     buildCalendar();
     updateStreak();
     checkGift();
+    celebrate();
 }
 
 btnYes.onclick = () => saveToday("success");
 btnNo.onclick = () => saveToday("fail");
-
-if (data[keyFor(year, month, today.getDate())]) {
-    btnYes.disabled = true;
-    btnNo.disabled = true;
-}
 
 /* ===== DARK MODE ===== */
 function applyDark(on) {
@@ -401,85 +382,10 @@ function applyDark(on) {
 applyDark(localStorage.getItem("rabsiDarkMode") === "1");
 darkToggle.onclick = () => applyDark(!document.body.classList.contains("dark"));
 
-/* ===== STATISTIK ===== */
-const statsBtn = document.getElementById("statsBtn");
-const statsModal = document.getElementById("statsModal");
-const monthSelect = document.getElementById("monthSelect");
-const statsGrid = document.getElementById("statsGrid");
-const statsSummary = document.getElementById("statsSummary");
-
-statsBtn.onclick = () => {
-    buildMonthOptions();
-    renderStats(monthSelect.value);
-    statsModal.style.display = "flex";
-};
-
-function closeStats() {
-    statsModal.style.display = "none";
-}
-
-function buildMonthOptions() {
-    monthSelect.innerHTML = "";
-    const keys = Object.keys(data);
-    const months = [...new Set(keys.map(k => k.slice(0,7)))].sort();
-    months.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
-        monthSelect.appendChild(opt);
-    });
-    monthSelect.onchange = () => renderStats(monthSelect.value);
-}
-
-function renderStats(monthKey) {
-    statsGrid.innerHTML = "";
-    let success = 0, fail = 0, longest = 0, current = 0;
-
-    const [y, m] = monthKey.split("-").map(Number);
-    const dim = new Date(y, m, 0).getDate();
-
-    for (let d = 1; d <= dim; d++) {
-        const key = keyFor(y, m-1, d);
-        const cell = document.createElement("div");
-        cell.textContent = d;
-
-        if (data[key] === "success") {
-            cell.style.background = "#4cd964";
-            success++;
-            current++;
-            longest = Math.max(longest, current);
-        } else if (data[key] === "fail") {
-            cell.style.background = "#ff5c5c";
-            fail++;
-            current = 0;
-        } else {
-            current = 0;
-        }
-        statsGrid.appendChild(cell);
-    }
-
-    const total = success + fail;
-    const percent = total ? Math.round((success / total) * 100) : 0;
-    const gift = success === dim ? "✅" : "❌";
-
-    statsSummary.innerHTML = `
-        🟢 ${success} Tage Streak<br>
-        🔴 ${fail} Tage gekaut<br>
-        📈 ${percent}% clean<br>
-        🔥 Längste Streak: ${longest}<br>
-        🎁 Geschenk: ${gift}
-    `;
-}
-
 /* ===== INIT ===== */
 buildCalendar();
 updateStreak();
 checkGift();
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-}
 </script>
 </body>
 </html>
-
