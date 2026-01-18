@@ -518,48 +518,62 @@ function resetPassword() {
 
 /* ===== ADMIN EDIT OTHER ACCOUNTS ===== */
 async function adminEditProgress() {
-    if (!isAdmin) {
-        alert("Nur Admins dürfen das");
-        return;
+    try {
+        if (!isAdmin) {
+            alert("❌ Kein Admin-Zugriff");
+            return;
+        }
+
+        const email = document.getElementById("editEmail").value.trim();
+        const date = document.getElementById("editDate").value;
+        const value = document.getElementById("editValue").value;
+
+        if (!email || !date) {
+            alert("❗ Bitte E-Mail UND Datum angeben");
+            return;
+        }
+
+        const d = new Date(date + "T12:00:00"); // 🔥 iOS-FIX
+
+        if (isNaN(d.getTime())) {
+            alert("❌ Ungültiges Datum");
+            return;
+        }
+
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+        const snap = await db.collection("users")
+            .where("email", "==", email)
+            .limit(1)
+            .get();
+
+        if (snap.empty) {
+            alert("❌ Account nicht gefunden");
+            return;
+        }
+
+        const doc = snap.docs[0];
+        const raw = doc.data();
+        const userData = raw.streakData ? { ...raw.streakData } : {};
+
+        if (value === "") {
+            delete userData[key];
+        } else {
+            userData[key] = value;
+        }
+
+        await db.collection("users").doc(doc.id).set({
+            email: raw.email || email,
+            streakData: userData
+        }, { merge: true });
+
+        alert("✅ Progress erfolgreich gesetzt");
+    } catch (err) {
+        alert("🔥 Fehler: " + err.message);
+        console.error(err);
     }
-
-    const email = document.getElementById("editEmail").value.trim();
-    const date = document.getElementById("editDate").value;
-    const value = document.getElementById("editValue").value;
-
-    if (!email || !date) {
-        alert("E-Mail und Datum angeben");
-        return;
-    }
-
-    const snap = await db.collection("users")
-        .where("email", "==", email)
-        .limit(1)
-        .get();
-
-    if (snap.empty) {
-        alert("Account nicht gefunden");
-        return;
-    }
-
-    const doc = snap.docs[0];
-    const uid = doc.id;
-    const raw = doc.data();
-    const userData = raw.streakData ? { ...raw.streakData } : {};
-
-    const d = new Date(date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-
-    if (value === "") delete userData[key];
-    else userData[key] = value;
-
-    await db.collection("users").doc(uid).set({
-    email: raw.email || email,
-    streakData: userData
-}, { merge: true });
-
-    alert("✅ Progress aktualisiert");
 }
+
 
 /* ===== AUTH STATE ===== */
 auth.onAuthStateChanged(user => {
@@ -623,6 +637,7 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
 
 
