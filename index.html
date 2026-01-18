@@ -286,6 +286,8 @@ firebase.initializeApp({
   appId: "1:261656631522:web:9b79c2cbc0e1e8790126bb"
 });
 const auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+.catch(err => console.error(err));
 const db = firebase.firestore();
 
 /* ===== STARS ===== */
@@ -591,4 +593,5 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
