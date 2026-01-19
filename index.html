@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2b1d3a">
+<meta name="theme-color" content="#7a5cff">
 
 <!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -59,9 +59,7 @@ body {
     max-width: 420px;
     border-radius: 24px;
     padding: 24px;
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.6),
-        0 0 40px rgba(122,92,255,0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
 }
 .hidden { display: none; }
 
@@ -118,7 +116,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .day {
-    aspect-ratio: 1/1;
+    aspect-ratio: 1 / 1;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -126,7 +124,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     font-weight: 600;
     background: #333;
 }
-
 .future  { background: #555; }
 .success { background: #4cd964 !important; color: #000; }
 .fail    { background: #ff5c5c !important; }
@@ -139,11 +136,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     background: #2a2a3d;
 }
 .locked { color: #888; }
-.unlocked {
-    background: linear-gradient(135deg, gold, orange);
-    color: #000;
-    font-weight: 700;
-}
 
 .modal {
     position: fixed;
@@ -160,6 +152,21 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     border-radius: 20px;
     width: 90%;
     max-width: 400px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin: 12px 0;
+}
+.stats-grid div {
+    aspect-ratio: 1/1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
 }
 
 input, select {
@@ -207,21 +214,22 @@ input, select {
     </div>
 
     <div class="gift locked" id="giftBox"></div>
+
     <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<!-- STATISTIK -->
+<!-- STATISTIK MODAL -->
 <div class="modal" id="statsModal">
     <div class="modal-content">
         <h2>📊 Statistik</h2>
         <select id="monthSelect"></select>
         <div id="statsSummary"></div>
-        <div class="calendar" id="statsGrid"></div>
+        <div class="stats-grid" id="statsGrid"></div>
         <button onclick="closeStats()">Schließen</button>
     </div>
 </div>
 
-<!-- ACCOUNT -->
+<!-- ACCOUNT MODAL -->
 <div class="modal" id="accountModal">
     <div class="modal-content">
         <h2>⚙️ Account</h2>
@@ -234,11 +242,13 @@ input, select {
 
         <input id="editEmail" placeholder="E-Mail des Accounts">
         <input id="editDate" type="date">
+
         <select id="editValue">
             <option value="success">✅ clean</option>
             <option value="fail">❌ gekaut</option>
             <option value="">⬜ löschen</option>
         </select>
+
         <button onclick="adminEditProgress()">💾 Progress setzen</button>
         <button onclick="closeAccount()">Schließen</button>
     </div>
@@ -255,6 +265,10 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+/* ===== iOS LOGIN FIX ===== */
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch(err => console.warn("Persistence error:", err));
+
 /* ===== STARS ===== */
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div");
@@ -265,14 +279,13 @@ for (let i = 0; i < 40; i++) {
     stars.appendChild(s);
 }
 
-/* ===== LOGIN (iOS SAFE) ===== */
+/* ===== LOGIN ===== */
 async function login() {
     const e = email.value.trim();
     const p = password.value.trim();
     if (!e || !p) { alert("Bitte E-Mail & Passwort eingeben"); return; }
 
     try {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         await auth.signInWithEmailAndPassword(e, p);
     } catch (err) {
         if (err.code === "auth/user-not-found") {
@@ -351,16 +364,27 @@ function buildCalendar() {
         const el = document.createElement("div");
         el.className = "day";
         el.textContent = d;
+
         const key = keyFor(d);
+        const date = new Date(year, month, d);
+
+        if (date > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
         if (d === today.getDate()) el.classList.add("today");
+
         calendar.appendChild(el);
     }
 }
 
 /* ===== STREAK ===== */
 function updateStreak() {
+    const todayKey = keyFor(today.getDate());
+    if (data[todayKey] !== "success") {
+        streakBox.textContent = "🔥 0 Tage Streak";
+        return;
+    }
+
     let streak = 0;
     for (let d = today.getDate(); d >= 1; d--) {
         if (data[keyFor(d)] === "success") streak++;
@@ -373,13 +397,11 @@ function updateStreak() {
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
         if (data[keyFor(d)] !== "success") {
-            giftBox.className = "gift locked";
             giftBox.textContent = "🔒 Geschenk gesperrt";
             return;
         }
     }
-    giftBox.className = "gift unlocked";
-    giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
+    giftBox.textContent = "🎁 GESCHENK FREIGESCHALTET 🎉";
 }
 
 /* ===== SAVE ===== */
@@ -390,7 +412,8 @@ function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
     data[key] = result;
-    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
+    db.collection("users").doc(auth.currentUser.uid)
+      .set({ streakData: data }, { merge: true });
 }
 
 /* ===== ADMIN ===== */
@@ -417,7 +440,11 @@ async function adminEditProgress() {
     const d = new Date(date + "T12:00:00");
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
-    const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+    const snap = await db.collection("users")
+        .where("email", "==", email)
+        .limit(1)
+        .get();
+
     if (snap.empty) { alert("Account nicht gefunden"); return; }
 
     const doc = snap.docs[0];
@@ -436,13 +463,13 @@ async function adminEditProgress() {
 }
 
 /* ===== MODALS ===== */
-function openStats()  { statsModal.style.display = "flex"; }
-function closeStats() { statsModal.style.display = "none"; }
+function openStats(){ statsModal.style.display = "flex"; }
+function closeStats(){ statsModal.style.display = "none"; }
 function openAccount(){ accountModal.style.display = "flex"; }
 function closeAccount(){ accountModal.style.display = "none"; }
 
 /* ===== LOGOUT ===== */
-function logout() { auth.signOut(); }
+function logout(){ auth.signOut(); }
 </script>
 </body>
 </html>
