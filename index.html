@@ -21,8 +21,6 @@ html, body {
     min-height: 100vh;
     overflow-y: auto;
 }
-
-/* ===== DARK MODE ONLY ===== */
 body {
     background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
     display: flex;
@@ -38,7 +36,6 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 1;
 }
 .star {
     position: absolute;
@@ -66,18 +63,11 @@ body {
         0 20px 40px rgba(0,0,0,0.6),
         0 0 40px rgba(122,92,255,0.15);
 }
-
 .hidden { display: none; }
 
 h1 { text-align: center; margin-bottom: 8px; }
+.subtitle { text-align: center; color: #aaa; margin-bottom: 16px; }
 
-.subtitle {
-    text-align: center;
-    color: #aaa;
-    margin-bottom: 16px;
-}
-
-/* ===== STREAK ===== */
 .streak {
     text-align: center;
     background: #2a2a3d;
@@ -88,7 +78,6 @@ h1 { text-align: center; margin-bottom: 8px; }
     font-weight: 700;
 }
 
-/* ===== BUTTONS ===== */
 button {
     width: 100%;
     padding: 12px;
@@ -105,21 +94,13 @@ button {
     gap: 10px;
     margin-bottom: 16px;
 }
-
-.buttons button {
-    width: 50%;
-    margin-bottom: 0;
-}
+.buttons button { width: 50%; margin-bottom: 0; }
 
 .yes { background: #7be495; color: #000; }
 .no  { background: #ff8a8a; color: #000; }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ===== WOCHENTAGE & KALENDER ===== */
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -137,7 +118,7 @@ button:disabled {
 }
 
 .day {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1/1;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -151,14 +132,12 @@ button:disabled {
 .fail    { background: #ff5c5c !important; }
 .today   { outline: 3px solid #7a5cff; }
 
-/* ===== GIFT ===== */
 .gift {
     text-align: center;
     padding: 14px;
     border-radius: 14px;
     background: #2a2a3d;
 }
-
 .locked { color: #888; }
 .unlocked {
     background: linear-gradient(135deg, gold, orange);
@@ -166,7 +145,6 @@ button:disabled {
     font-weight: 700;
 }
 
-/* ===== MODALS ===== */
 .modal {
     position: fixed;
     inset: 0;
@@ -176,29 +154,12 @@ button:disabled {
     align-items: center;
     z-index: 1000;
 }
-
 .modal-content {
     background: #1c1c28;
     padding: 20px;
     border-radius: 20px;
     width: 90%;
     max-width: 400px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin: 12px 0;
-}
-
-.stats-grid div {
-    aspect-ratio: 1/1;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
 }
 
 input, select {
@@ -246,22 +207,21 @@ input, select {
     </div>
 
     <div class="gift locked" id="giftBox"></div>
-
     <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<!-- STATISTIK MODAL -->
+<!-- STATISTIK -->
 <div class="modal" id="statsModal">
     <div class="modal-content">
         <h2>📊 Statistik</h2>
         <select id="monthSelect"></select>
         <div id="statsSummary"></div>
-        <div class="stats-grid" id="statsGrid"></div>
+        <div class="calendar" id="statsGrid"></div>
         <button onclick="closeStats()">Schließen</button>
     </div>
 </div>
 
-<!-- ACCOUNT MODAL -->
+<!-- ACCOUNT -->
 <div class="modal" id="accountModal">
     <div class="modal-content">
         <h2>⚙️ Account</h2>
@@ -270,17 +230,15 @@ input, select {
         <p><b>Gespeicherte Tage:</b> <span id="accDays"></span></p>
 
         <hr>
-        <h3>👑 Admin: Account bearbeiten</h3>
+        <h3>👑 Admin: Progress setzen</h3>
 
         <input id="editEmail" placeholder="E-Mail des Accounts">
         <input id="editDate" type="date">
-
         <select id="editValue">
             <option value="success">✅ clean</option>
             <option value="fail">❌ gekaut</option>
             <option value="">⬜ löschen</option>
         </select>
-
         <button onclick="adminEditProgress()">💾 Progress setzen</button>
         <button onclick="closeAccount()">Schließen</button>
     </div>
@@ -298,7 +256,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 /* ===== STARS ===== */
-const stars = document.getElementById("stars");
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div");
     s.className = "star";
@@ -308,7 +265,7 @@ for (let i = 0; i < 40; i++) {
     stars.appendChild(s);
 }
 
-/* ===== LOGIN (iOS-FIX) ===== */
+/* ===== LOGIN (iOS SAFE) ===== */
 async function login() {
     const e = email.value.trim();
     const p = password.value.trim();
@@ -350,9 +307,7 @@ auth.onAuthStateChanged(user => {
     accEmail.textContent = user.email;
     accUid.textContent = user.uid;
 
-    db.collection("users").doc(user.uid).set({
-        email: user.email
-    }, { merge: true });
+    db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
 
     db.collection("users").doc(user.uid).onSnapshot(doc => {
         data = doc.data()?.streakData || {};
@@ -360,14 +315,13 @@ auth.onAuthStateChanged(user => {
         buildCalendar();
         updateStreak();
         checkGift();
-        updateAdminUI();
         applyTimeLock();
+        updateAdminUI();
     });
 });
 
 /* ===== HELPERS ===== */
 monthTitle.textContent = today.toLocaleString("de-DE", { month: "long", year: "numeric" });
-
 function keyFor(d) {
     return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
 }
@@ -397,27 +351,16 @@ function buildCalendar() {
         const el = document.createElement("div");
         el.className = "day";
         el.textContent = d;
-
         const key = keyFor(d);
-        const date = new Date(year, month, d);
-
-        if (date > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
         if (d === today.getDate()) el.classList.add("today");
-
         calendar.appendChild(el);
     }
 }
 
 /* ===== STREAK ===== */
 function updateStreak() {
-    const todayKey = keyFor(today.getDate());
-    if (data[todayKey] !== "success") {
-        streakBox.textContent = "🔥 0 Tage Streak";
-        return;
-    }
-
     let streak = 0;
     for (let d = today.getDate(); d >= 1; d--) {
         if (data[keyFor(d)] === "success") streak++;
@@ -446,112 +389,60 @@ btnNo.onclick  = () => saveToday("fail");
 function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
-
     data[key] = result;
-    db.collection("users").doc(auth.currentUser.uid).set({
-        streakData: data
-    }, { merge: true });
+    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
 
 /* ===== ADMIN ===== */
-const adminToggle = document.getElementById("adminToggle");
-
-function updateAdminUI() {
-    adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
-}
-
 adminToggle.onclick = () => {
     isAdmin = !isAdmin;
     localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
     updateAdminUI();
     applyTimeLock();
 };
+function updateAdminUI() {
+    adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
+}
 
 /* ===== ADMIN EDIT ===== */
 async function adminEditProgress() {
-    try {
-        if (!isAdmin) { alert("Kein Admin-Zugriff"); return; }
+    if (!isAdmin) { alert("Kein Admin-Zugriff"); return; }
 
-        const email = editEmail.value.trim();
-        const date = editDate.value;
-        const value = editValue.value;
+    const email = editEmail.value.trim();
+    const date = editDate.value;
+    const value = editValue.value;
 
-        if (!email || !date) { alert("E-Mail und Datum angeben"); return; }
+    if (!email || !date) { alert("E-Mail & Datum angeben"); return; }
 
-        const d = new Date(date + "T12:00:00");
-        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const d = new Date(date + "T12:00:00");
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
-        const snap = await db.collection("users").where("email", "==", email).limit(1).get();
-        if (snap.empty) { alert("Account nicht gefunden"); return; }
+    const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (snap.empty) { alert("Account nicht gefunden"); return; }
 
-        const doc = snap.docs[0];
-        const raw = doc.data();
-        const userData = raw.streakData ? { ...raw.streakData } : {};
+    const doc = snap.docs[0];
+    const raw = doc.data();
+    const userData = raw.streakData ? { ...raw.streakData } : {};
 
-        if (value === "") delete userData[key];
-        else userData[key] = value;
+    if (value === "") delete userData[key];
+    else userData[key] = value;
 
-        await db.collection("users").doc(doc.id).set({
-            email: raw.email || email,
-            streakData: userData
-        }, { merge: true });
+    await db.collection("users").doc(doc.id).set({
+        email: raw.email || email,
+        streakData: userData
+    }, { merge: true });
 
-        alert("✅ Progress aktualisiert");
-    } catch (err) {
-        alert(err.message);
-    }
+    alert("✅ Progress aktualisiert");
 }
 
 /* ===== MODALS ===== */
-function openStats()  { statsModal.style.display = "flex"; buildStats(); }
+function openStats()  { statsModal.style.display = "flex"; }
 function closeStats() { statsModal.style.display = "none"; }
 function openAccount(){ accountModal.style.display = "flex"; }
 function closeAccount(){ accountModal.style.display = "none"; }
 
-/* ===== STATS ===== */
-function buildStats() {
-    monthSelect.innerHTML = "";
-    const months = [...new Set(Object.keys(data).map(k => k.slice(0,7)))].sort();
-    months.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
-        monthSelect.appendChild(opt);
-    });
-    monthSelect.onchange = () => renderStats(monthSelect.value);
-    renderStats(monthSelect.value);
-}
-
-function renderStats(monthKey) {
-    statsGrid.innerHTML = "";
-    if (!monthKey) return;
-
-    let success = 0, fail = 0;
-
-    const [y, m] = monthKey.split("-").map(Number);
-    const dim = new Date(y, m, 0).getDate();
-
-    for (let d = 1; d <= dim; d++) {
-        const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const cell = document.createElement("div");
-        cell.textContent = d;
-
-        if (data[key] === "success") { cell.style.background = "#4cd964"; success++; }
-        if (data[key] === "fail")    { cell.style.background = "#ff5c5c"; fail++; }
-
-        statsGrid.appendChild(cell);
-    }
-
-    statsSummary.innerHTML = `
-        🟢 ${success} Tage clean<br>
-        🔴 ${fail} Tage gekaut
-    `;
-}
-
 /* ===== LOGOUT ===== */
-function logout() {
-    auth.signOut();
-}
+function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
