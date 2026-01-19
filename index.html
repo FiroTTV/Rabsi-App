@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#7a5cff">
+<meta name="theme-color" content="#2b1d3a">
 
 <!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -21,6 +21,8 @@ html, body {
     min-height: 100vh;
     overflow-y: auto;
 }
+
+/* ===== DARK MODE ONLY ===== */
 body {
     background: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
     display: flex;
@@ -36,6 +38,7 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
+    opacity: 1;
 }
 .star {
     position: absolute;
@@ -59,7 +62,9 @@ body {
     max-width: 420px;
     border-radius: 24px;
     padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.6),
+        0 0 40px rgba(122,92,255,0.15);
 }
 .hidden { display: none; }
 
@@ -136,7 +141,13 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     background: #2a2a3d;
 }
 .locked { color: #888; }
+.unlocked {
+    background: linear-gradient(135deg, gold, orange);
+    color: #000;
+    font-weight: 700;
+}
 
+/* ===== MODALS ===== */
 .modal {
     position: fixed;
     inset: 0;
@@ -238,7 +249,7 @@ input, select {
         <p><b>Gespeicherte Tage:</b> <span id="accDays"></span></p>
 
         <hr>
-        <h3>👑 Admin: Progress setzen</h3>
+        <h3>👑 Admin: Account bearbeiten</h3>
 
         <input id="editEmail" placeholder="E-Mail des Accounts">
         <input id="editDate" type="date">
@@ -265,11 +276,12 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* ===== iOS LOGIN FIX ===== */
+/* ✅ iOS LOGIN FIX – EINMAL GLOBAL */
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
   .catch(err => console.warn("Persistence error:", err));
 
 /* ===== STARS ===== */
+const stars = document.getElementById("stars");
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div");
     s.className = "star";
@@ -328,8 +340,8 @@ auth.onAuthStateChanged(user => {
         buildCalendar();
         updateStreak();
         checkGift();
-        applyTimeLock();
         updateAdminUI();
+        applyTimeLock();
     });
 });
 
@@ -397,11 +409,13 @@ function updateStreak() {
 function checkGift() {
     for (let d = 1; d <= daysInMonth; d++) {
         if (data[keyFor(d)] !== "success") {
+            giftBox.className = "gift locked";
             giftBox.textContent = "🔒 Geschenk gesperrt";
             return;
         }
     }
-    giftBox.textContent = "🎁 GESCHENK FREIGESCHALTET 🎉";
+    giftBox.className = "gift unlocked";
+    giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
 }
 
 /* ===== SAVE ===== */
@@ -411,65 +425,106 @@ btnNo.onclick  = () => saveToday("fail");
 function saveToday(result) {
     const key = keyFor(today.getDate());
     if (data[key]) return;
+
     data[key] = result;
-    db.collection("users").doc(auth.currentUser.uid)
-      .set({ streakData: data }, { merge: true });
+    db.collection("users").doc(auth.currentUser.uid).set({
+        streakData: data
+    }, { merge: true });
 }
 
 /* ===== ADMIN ===== */
+const adminToggle = document.getElementById("adminToggle");
+function updateAdminUI() {
+    adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
+}
 adminToggle.onclick = () => {
     isAdmin = !isAdmin;
     localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
     updateAdminUI();
     applyTimeLock();
 };
-function updateAdminUI() {
-    adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
-}
 
 /* ===== ADMIN EDIT ===== */
 async function adminEditProgress() {
-    if (!isAdmin) { alert("Kein Admin-Zugriff"); return; }
+    try {
+        if (!isAdmin) { alert("Kein Admin-Zugriff"); return; }
 
-    const email = editEmail.value.trim();
-    const date = editDate.value;
-    const value = editValue.value;
+        const email = editEmail.value.trim();
+        const date = editDate.value;
+        const value = editValue.value;
 
-    if (!email || !date) { alert("E-Mail & Datum angeben"); return; }
+        if (!email || !date) { alert("E-Mail und Datum angeben"); return; }
 
-    const d = new Date(date + "T12:00:00");
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const d = new Date(date + "T12:00:00");
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
-    const snap = await db.collection("users")
-        .where("email", "==", email)
-        .limit(1)
-        .get();
+        const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+        if (snap.empty) { alert("Account nicht gefunden"); return; }
 
-    if (snap.empty) { alert("Account nicht gefunden"); return; }
+        const doc = snap.docs[0];
+        const raw = doc.data();
+        const userData = raw.streakData ? { ...raw.streakData } : {};
 
-    const doc = snap.docs[0];
-    const raw = doc.data();
-    const userData = raw.streakData ? { ...raw.streakData } : {};
+        if (value === "") delete userData[key];
+        else userData[key] = value;
 
-    if (value === "") delete userData[key];
-    else userData[key] = value;
+        await db.collection("users").doc(doc.id).set({
+            email: raw.email || email,
+            streakData: userData
+        }, { merge: true });
 
-    await db.collection("users").doc(doc.id).set({
-        email: raw.email || email,
-        streakData: userData
-    }, { merge: true });
-
-    alert("✅ Progress aktualisiert");
+        alert("✅ Progress aktualisiert");
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
 /* ===== MODALS ===== */
-function openStats(){ statsModal.style.display = "flex"; }
+function openStats(){ statsModal.style.display = "flex"; buildStats(); }
 function closeStats(){ statsModal.style.display = "none"; }
 function openAccount(){ accountModal.style.display = "flex"; }
 function closeAccount(){ accountModal.style.display = "none"; }
 
+/* ===== STATS ===== */
+function buildStats() {
+    monthSelect.innerHTML = "";
+    const months = [...new Set(Object.keys(data).map(k => k.slice(0,7)))].sort();
+    months.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
+    });
+    monthSelect.onchange = () => renderStats(monthSelect.value);
+    renderStats(monthSelect.value);
+}
+function renderStats(monthKey) {
+    statsGrid.innerHTML = "";
+    if (!monthKey) return;
+
+    let success = 0, fail = 0;
+    const [y, m] = monthKey.split("-").map(Number);
+    const dim = new Date(y, m, 0).getDate();
+
+    for (let d = 1; d <= dim; d++) {
+        const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const cell = document.createElement("div");
+        cell.textContent = d;
+
+        if (data[key] === "success") { cell.style.background = "#4cd964"; success++; }
+        if (data[key] === "fail")    { cell.style.background = "#ff5c5c"; fail++; }
+
+        statsGrid.appendChild(cell);
+    }
+
+    statsSummary.innerHTML = `
+        🟢 ${success} Tage clean<br>
+        🔴 ${fail} Tage gekaut
+    `;
+}
+
 /* ===== LOGOUT ===== */
-function logout(){ auth.signOut(); }
+function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
