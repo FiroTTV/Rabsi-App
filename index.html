@@ -218,7 +218,11 @@ input, select {
     <button onclick="openAccount()">⚙️ Account</button>
     <button id="adminToggle">👑 Admin-Modus: AUS</button>
 
-    <div class="subtitle" id="monthTitle"></div>
+    <div class="subtitle" style="display:flex;justify-content:space-between;align-items:center;">
+    <button onclick="changeMonth(-1)">⬅️</button>
+    <span id="monthTitle"></span>
+    <button onclick="changeMonth(1)">➡️</button>
+
     <div class="streak" id="streakBox">🔥 0 Tage Streak</div>
 
     <div class="weekdays">
@@ -323,8 +327,7 @@ let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
 
 const today = new Date();
 const hour = today.getHours();
-const year = today.getFullYear();
-const month = today.getMonth();
+let viewDate = new Date();
 const daysInMonth = new Date(year, month + 1, 0).getDate();
 
 /* ===== AUTH STATE ===== */
@@ -360,6 +363,27 @@ function keyFor(d) {
     return `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
 }
 
+function updateMonthTitle() {
+    monthTitle.textContent =
+        viewDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
+}
+
+function changeMonth(offset) {
+    viewDate.setMonth(viewDate.getMonth() + offset);
+
+    // Zukunft sperren
+    const now = new Date();
+    if (viewDate > now) {
+        viewDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        return;
+    }
+
+    buildCalendar();
+    updateStreak();
+    checkGift();
+    updateMonthTitle();
+}
+
 /* ===== TIME LOCK ===== */
 function applyTimeLock() {
     if (hour < 20 && !isAdmin) {
@@ -378,6 +402,10 @@ function applyTimeLock() {
 /* ===== CALENDAR ===== */
 function buildCalendar() {
     calendar.innerHTML = "";
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
     const offset = (new Date(year, month, 1).getDay() + 6) % 7;
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
 
@@ -543,4 +571,5 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
 
