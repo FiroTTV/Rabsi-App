@@ -14,32 +14,31 @@
 
 <style>
 :root {
-    --bg-dark: #0f0c29;
+    --bg-gradient: linear-gradient(135deg, #2b1d3a, #1e1e2f, #2a1f4f);
     --accent: #7a5cff;
-    --success: #4cd964;
-    --fail: #ff5c5c;
-    --glass: rgba(255, 255, 255, 0.08);
-    --glass-heavy: rgba(255, 255, 255, 0.12);
+    --success: #7be495;
+    --fail: #ff8a8a;
+    --glass: rgba(255, 255, 255, 0.1);
 }
 
 html, body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background: var(--bg-gradient);
     color: #ffffff;
-    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px 15px;
+    padding: 24px 0;
 }
 
-/* ===== ANIMATED STARS ===== */
+/* ===== ANIMATED STARS (FIXED) ===== */
 #stars {
     position: fixed;
     inset: 0;
@@ -50,77 +49,46 @@ body {
     position: absolute;
     width: 2px;
     height: 2px;
-    background: #fff;
+    background: radial-gradient(circle, #fff, #c7b3ff);
     border-radius: 50%;
-    animation: blink linear infinite;
+    animation: floatStar linear infinite;
 }
-@keyframes blink {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.8; }
+@keyframes floatStar {
+    from { transform: translateY(100vh); opacity: 0; }
+    50% { opacity: 1; }
+    to { transform: translateY(-10vh); opacity: 0; }
 }
 
 /* ===== APP CONTAINER ===== */
 .app {
     position: relative;
     z-index: 2;
-    background: rgba(25, 25, 45, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(30, 27, 46, 0.95);
     width: 100%;
     max-width: 420px;
-    border-radius: 32px;
-    padding: 28px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 0 1px rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
 }
 .hidden { display: none; }
 
-h1 { 
-    text-align: center; 
-    font-weight: 800; 
-    font-size: 1.6rem; 
-    margin-top: 0;
-    background: linear-gradient(to right, #fff, #c7b3ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+h1 { text-align: center; margin-bottom: 16px; font-weight: 800; }
 
-/* ===== HEADER CONTROLS ===== */
-.header-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-/* ===== BUTTONS ===== */
-button {
-    font-family: inherit;
-    border: none;
-    border-radius: 16px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+/* ===== TOP BUTTONS ===== */
+.top-nav {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 12px;
 }
-button:active { transform: scale(0.96); }
+.top-nav button { margin-bottom: 0; flex: 1; background: #3a3a55; color: white; }
 
-.btn-secondary { background: var(--glass); color: white; }
-.btn-secondary:hover { background: var(--glass-heavy); }
-
-.btn-admin { 
-    background: transparent; 
-    color: #888; 
-    font-size: 11px; 
-    border: 1px solid rgba(255,255,255,0.1);
-    margin: 10px auto;
-    width: auto;
-    padding: 4px 12px;
+#adminToggle {
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 20px;
 }
 
 /* ===== CALENDAR NAV ===== */
@@ -128,103 +96,104 @@ button:active { transform: scale(0.96); }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 24px 0 16px;
-    background: var(--glass);
-    padding: 8px;
-    border-radius: 18px;
+    margin-bottom: 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 6px;
 }
 .nav-btn {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     background: var(--accent);
     color: white;
-    border-radius: 12px;
-    font-size: 14px;
+    border-radius: 10px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
 }
-.subtitle { font-weight: 700; font-size: 1rem; color: #fff; }
+.subtitle { font-weight: 700; color: #aaa; }
 
 /* ===== STREAK BOX ===== */
 .streak {
-    background: linear-gradient(135deg, rgba(122,92,255,0.2), rgba(122,92,255,0.05));
-    border: 1px solid rgba(122,92,255,0.3);
-    border-radius: 20px;
-    padding: 16px;
     text-align: center;
+    background: #2a2a3d;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
     font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 24px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    font-weight: 700;
+    border: 1px solid rgba(122,92,255,0.2);
 }
 
-/* ===== CALENDAR GRID ===== */
+/* ===== BUTTONS ===== */
+button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: transform 0.1s, filter 0.2s;
+}
+button:active { transform: scale(0.97); }
+
+.buttons { display: flex; gap: 12px; margin-bottom: 20px; }
+.buttons button { width: 50%; margin-bottom: 0; }
+
+.yes { background: var(--success); color: #000; box-shadow: 0 4px 15px rgba(123,228,149,0.3); }
+.no  { background: var(--fail); color: #000; box-shadow: 0 4px 15px rgba(255,138,138,0.3); }
+
+button:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.5); }
+
+/* ===== KALENDER ===== */
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 12px;
     text-align: center;
-    opacity: 0.5;
-    margin-bottom: 10px;
+    opacity: 0.6;
+    margin-bottom: 8px;
 }
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 .day {
     aspect-ratio: 1;
-    background: var(--glass);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
     font-weight: 600;
-    transition: 0.3s;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.future { opacity: 0.3; }
-.success { background: var(--success) !important; color: #000; box-shadow: 0 4px 12px rgba(76,217,100,0.4); }
-.fail { background: var(--fail) !important; color: #fff; box-shadow: 0 4px 12px rgba(255,92,92,0.4); }
-.today { border: 2px solid var(--accent); position: relative; }
-.today::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    width: 4px;
-    height: 4px;
-    background: var(--accent);
-    border-radius: 50%;
-}
-
-/* ===== MAIN BUTTONS ===== */
-.action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-.yes { background: var(--success); color: #000; }
-.no { background: var(--fail); color: #fff; }
-
-/* ===== GIFT BOX ===== */
-.gift {
-    padding: 18px;
-    border-radius: 20px;
-    text-align: center;
+    background: #333;
     font-size: 14px;
-    border: 1px dashed rgba(255,255,255,0.2);
-    transition: all 0.5s ease;
 }
-.locked { color: #666; background: rgba(0,0,0,0.2); }
+.future  { background: #444; opacity: 0.3; }
+.success { background: var(--success) !important; color: #000; }
+.fail     { background: var(--fail) !important; color: #000; }
+.today   { outline: 3px solid var(--accent); outline-offset: -3px; }
+
+/* ===== GIFT ===== */
+.gift {
+    text-align: center;
+    padding: 16px;
+    border-radius: 16px;
+    background: #2a2a3d;
+    font-size: 14px;
+}
+.locked { color: #777; border: 1px dashed #444; }
 .unlocked {
-    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    background: linear-gradient(135deg, gold, orange);
     color: #000;
     font-weight: 800;
-    border: none;
-    box-shadow: 0 10px 20px rgba(255,140,0,0.3);
+    box-shadow: 0 10px 20px rgba(255,165,0,0.3);
 }
 
 /* ===== MODALS ===== */
@@ -236,50 +205,32 @@ button:active { transform: scale(0.96); }
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(5px);
 }
 .modal-content {
-    background: #1c1c2e;
+    background: #1c1c28;
     padding: 24px;
-    border-radius: 28px;
+    border-radius: 24px;
     width: 90%;
-    max-width: 380px;
-    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 400px;
 }
-
 .stats-detail-box {
     background: rgba(255,255,255,0.05);
-    padding: 16px;
-    border-radius: 20px;
-    margin: 15px 0;
-}
-.stats-line {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
     font-size: 14px;
+    line-height: 1.8;
 }
-.stats-line b { color: var(--accent); }
 
-/* ===== INPUTS ===== */
 input, select {
     width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(0,0,0,0.2);
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    margin-bottom: 10px;
+    background: #2a2a3d;
     color: white;
-    margin-bottom: 12px;
-    box-sizing: border-box;
-    font-size: 14px;
-}
-
-.logout-btn {
-    background: transparent;
-    color: #ff5c5c;
-    margin-top: 15px;
-    font-size: 13px;
-    opacity: 0.7;
 }
 </style>
 </head>
@@ -289,21 +240,19 @@ input, select {
 
 <div class="app" id="loginBox">
     <h1>💜 Rabsi Login</h1>
-    <p style="text-align: center; opacity: 0.6; font-size: 14px; margin-bottom: 20px;">Melde dich an, um deine Fortschritte zu speichern.</p>
-    <input id="email" type="email" placeholder="Deine E-Mail">
-    <input id="password" type="password" placeholder="Dein Passwort">
-    <button class="yes" style="width: 100%;" onclick="login()">Einloggen / Registrieren</button>
+    <input id="email" placeholder="E-Mail">
+    <input id="password" type="password" placeholder="Passwort">
+    <button class="yes" style="width:100%" onclick="login()">Einloggen / Registrieren</button>
 </div>
 
 <div class="app hidden" id="appBox">
-    <h1>Rabsi's Nails</h1>
+    <h1>🔥 Rabsi's Nail-Streak</h1>
 
-    <div class="header-actions">
-        <button class="btn-secondary" onclick="openStats()">📊 Statistik</button>
-        <button class="btn-secondary" onclick="openAccount()">⚙️ Account</button>
+    <div class="top-nav">
+        <button onclick="openStats()">📊 Statistik</button>
+        <button onclick="openAccount()">⚙️ Account</button>
     </div>
-    
-    <button id="adminToggle" class="btn-admin">👑 Admin-Modus: AUS</button>
+    <button id="adminToggle" onclick="toggleAdmin()">👑 Admin-Modus: AUS</button>
 
     <div class="nav-header">
         <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
@@ -318,49 +267,47 @@ input, select {
     </div>
     <div class="calendar" id="calendar"></div>
 
-    <div class="action-buttons">
-        <button class="yes" id="btnYes">Clean ✅</button>
-        <button class="no" id="btnNo">Gekaut ❌</button>
+    <div class="buttons">
+        <button class="yes" id="btnYes">Heute nicht gekaut ✅</button>
+        <button class="no" id="btnNo">Heute gekaut ❌</button>
     </div>
 
-    <div class="gift locked" id="giftBox">🔒 Geschenk gesperrt</div>
+    <div class="gift locked" id="giftBox"></div>
 
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    <button onclick="logout()" style="background:transparent; color:#888; font-size:12px; margin-top:10px;">🚪 Logout</button>
 </div>
 
 <div class="modal" id="statsModal">
     <div class="modal-content">
-        <h2 style="margin: 0 0 15px 0;">📊 Statistik</h2>
+        <h2>📊 Statistik</h2>
         <select id="monthSelect"></select>
         <div id="statsSummary" class="stats-detail-box"></div>
         <div class="stats-grid" id="statsGrid"></div>
-        <button class="btn-secondary" style="width: 100%;" onclick="closeStats()">Schließen</button>
+        <button onclick="closeStats()" style="background:#444; color:white;">Schließen</button>
     </div>
 </div>
 
 <div class="modal" id="accountModal">
     <div class="modal-content">
         <h2>⚙️ Account</h2>
-        <div class="stats-detail-box" style="font-size: 13px;">
-            <div><b>E-Mail:</b> <span id="accEmail"></span></div>
-            <div style="margin-top: 8px;"><b>Einträge:</b> <span id="accDays"></span></div>
-        </div>
-
-        <h3 style="font-size: 15px;">Admin Korrektur</h3>
+        <p><b>E-Mail:</b> <span id="accEmail"></span></p>
+        <p><b>Einträge:</b> <span id="accDays"></span></p>
+        <hr style="border:0.5px solid #333">
+        <h3>Admin Bearbeitung</h3>
         <input id="editEmail" placeholder="Account E-Mail">
         <input id="editDate" type="date">
         <select id="editValue">
-            <option value="success">✅ Clean</option>
-            <option value="fail">❌ Gekaut</option>
-            <option value="">⬜ Löschen</option>
+            <option value="success">✅ clean</option>
+            <option value="fail">❌ gekaut</option>
+            <option value="">⬜ löschen</option>
         </select>
-        <button class="yes" style="width:100%; margin-bottom: 10px;" onclick="adminEditProgress()">💾 Speichern</button>
-        <button class="btn-secondary" style="width:100%;" onclick="closeAccount()">Schließen</button>
+        <button class="yes" style="width:100%" onclick="adminEditProgress()">💾 Speichern</button>
+        <button onclick="closeAccount()">Schließen</button>
     </div>
 </div>
 
 <script>
-/* ===== FIREBASE CONFIG ===== */
+/* ===== FIREBASE ===== */
 firebase.initializeApp({
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
   authDomain: "rabsi-nail-streak.firebaseapp.com",
@@ -370,14 +317,25 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* ===== STATE MANAGEMENT ===== */
+/* ===== STARS ANIMATION (FIXED) ===== */
+const starsContainer = document.getElementById("stars");
+for (let i = 0; i < 40; i++) {
+    const s = document.createElement("div");
+    s.className = "star";
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.animationDuration = (15 + Math.random() * 15) + "s";
+    s.style.animationDelay = (Math.random() * 10) + "s";
+    starsContainer.appendChild(s);
+}
+
+/* ===== STATE ===== */
 let data = {};
 let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
 let displayDate = new Date();
 displayDate.setDate(1); 
 const today = new Date();
 
-/* ===== APP LOGIC ===== */
+/* ===== AUTH ===== */
 auth.onAuthStateChanged(user => {
     if (!user) {
         loginBox.classList.remove("hidden");
@@ -399,11 +357,12 @@ auth.onAuthStateChanged(user => {
 
 async function login() {
     const e = email.value.trim(), p = password.value.trim();
-    if (!e || !p) return alert("Daten eingeben!");
+    if (!e || !p) return alert("Bitte Daten eingeben");
     try { await auth.signInWithEmailAndPassword(e, p); } 
     catch (err) { if (err.code === "auth/user-not-found") await auth.createUserWithEmailAndPassword(e, p); else alert(err.message); }
 }
 
+/* ===== LOGIK ===== */
 function changeMonth(delta) {
     displayDate.setMonth(displayDate.getMonth() + delta);
     updateAppView();
@@ -416,13 +375,12 @@ function updateAppView() {
     checkGift();
 }
 
-function keyFor(y, m, d) { return `${y}-${String(m + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
-
 function applyTimeLock() {
-    const isLocked = today.getHours() < 20 && !isAdmin;
+    const hour = today.getHours();
+    const isLocked = hour < 20 && !isAdmin;
     btnYes.disabled = isLocked; btnNo.disabled = isLocked;
-    btnYes.textContent = isLocked ? "⏰ Ab 20h" : "Clean ✅";
-    btnNo.textContent = isLocked ? "⏰ Ab 20h" : "Gekaut ❌";
+    btnYes.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute nicht gekaut ✅";
+    btnNo.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute gekaut ❌";
 }
 
 function buildCalendar() {
@@ -434,7 +392,7 @@ function buildCalendar() {
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
     for (let d = 1; d <= dim; d++) {
         const el = document.createElement("div"); el.className = "day"; el.textContent = d;
-        const key = keyFor(y, m, d);
+        const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         if (new Date(y, m, d) > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
@@ -445,17 +403,16 @@ function buildCalendar() {
 
 function updateStreak() {
     let streak = 0, check = new Date(today);
-    if (data[keyFor(check.getFullYear(), check.getMonth(), check.getDate())] !== "success") check.setDate(check.getDate() - 1);
-    while (data[keyFor(check.getFullYear(), check.getMonth(), check.getDate())] === "success") {
-        streak++; check.setDate(check.getDate() - 1);
-    }
+    const key = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    if (data[key(check)] !== "success") check.setDate(check.getDate() - 1);
+    while (data[key(check)] === "success") { streak++; check.setDate(check.getDate() - 1); }
     streakBox.textContent = `🔥 ${streak} Tage Streak`;
 }
 
 function saveToday(res) {
-    const key = keyFor(today.getFullYear(), today.getMonth(), today.getDate());
-    if (data[key]) return;
-    data[key] = res;
+    const k = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+    if (data[k]) return;
+    data[k] = res;
     db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
 btnYes.onclick = () => saveToday("success");
@@ -476,68 +433,54 @@ function buildStats() {
 function renderStats(monthKey) {
     statsGrid.innerHTML = ""; if (!monthKey) return;
     const [y, m] = monthKey.split("-").map(Number);
-    let success = 0, fail = 0;
+    let sCount = 0, fCount = 0;
     for (let d = 1; d <= new Date(y, m, 0).getDate(); d++) {
         const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         const cell = document.createElement("div"); cell.textContent = d; cell.className = "day";
-        if (data[key] === "success") { cell.classList.add("success"); success++; }
-        if (data[key] === "fail") { cell.classList.add("fail"); fail++; }
+        if (data[key] === "success") { cell.classList.add("success"); sCount++; }
+        if (data[key] === "fail") { cell.classList.add("fail"); fCount++; }
         statsGrid.appendChild(cell);
     }
-    let best = 0, temp = 0;
-    Object.keys(data).sort().forEach(k => {
-        if (data[k] === "success") { temp++; if(temp > best) best = temp; } else temp = 0;
-    });
-    const total = success + fail;
-    const percent = total ? Math.round((success/total)*100) : 0;
-    statsSummary.innerHTML = `
-        <div class="stats-line">Clean: <b>${success}</b></div>
-        <div class="stats-line">Gekaut: <b>${fail}</b></div>
-        <div class="stats-line">Quote: <b>${percent}%</b></div>
-        <div class="stats-line">Rekord: <b>🔥 ${best}</b></div>
-    `;
+    let best = 0, tmp = 0;
+    Object.keys(data).sort().forEach(k => { if(data[k]==="success"){tmp++; if(tmp>best)best=tmp;}else tmp=0;});
+    const perc = (sCount+fCount) ? Math.round((sCount/(sCount+fCount))*100) : 0;
+    statsSummary.innerHTML = `🟢 Clean: <b>${sCount}</b> | 🔴 Gekaut: <b>${fCount}</b><br>📈 Quote: <b>${perc}%</b> | 🏆 Rekord: <b>${best} Tage</b>`;
 }
 
-/* ===== MISC ===== */
-function checkGift() {
-    const y = displayDate.getFullYear(), m = displayDate.getMonth();
-    let entries = 0, failed = false;
-    for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) {
-        const key = keyFor(y, m, d);
-        if (data[key] === "success") entries++;
-        else if (new Date(y, m, d) <= today) failed = true;
-    }
-    if (!failed && entries > 0) { giftBox.className = "gift unlocked"; giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉"; }
-    else { giftBox.className = "gift locked"; giftBox.textContent = "🔒 Geschenk gesperrt"; }
+/* ===== ADMIN & MISC ===== */
+function toggleAdmin() {
+    isAdmin = !isAdmin;
+    localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
+    updateAdminUI(); applyTimeLock();
 }
-
 function updateAdminUI() { adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; }
-adminToggle.onclick = () => { isAdmin = !isAdmin; localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0"); updateAdminUI(); applyTimeLock(); };
 function openAccount(){ accountModal.style.display = "flex"; }
 function closeAccount(){ accountModal.style.display = "none"; }
 function logout() { auth.signOut(); }
 
+function checkGift() {
+    const y = displayDate.getFullYear(), m = displayDate.getMonth();
+    let entries = 0, fail = false;
+    for (let d = 1; d <= new Date(y, m+1, 0).getDate(); d++) {
+        const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        if (data[k] === "success") entries++;
+        else if (new Date(y, m, d) <= today) fail = true;
+    }
+    if (!fail && entries > 0) { giftBox.className = "gift unlocked"; giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br>Ich bin stolz auf dich!"; }
+    else { giftBox.className = "gift locked"; giftBox.textContent = "🔒 Geschenk gesperrt"; }
+}
+
 async function adminEditProgress() {
-    const email = editEmail.value.trim(), date = editDate.value, value = editValue.value;
+    const email = editEmail.value.trim(), date = editDate.value, val = editValue.value;
     if (!email || !date) return alert("Daten unvollständig");
     const d = new Date(date + "T12:00:00");
     const snap = await db.collection("users").where("email", "==", email).limit(1).get();
-    if (snap.empty) return alert("Nicht gefunden");
+    if (snap.empty) return alert("User nicht gefunden");
     const doc = snap.docs[0], uData = doc.data().streakData || {};
-    const key = keyFor(d.getFullYear(), d.getMonth(), d.getDate());
-    if (value === "") delete uData[key]; else uData[key] = value;
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    if (val === "") delete uData[k]; else uData[k] = val;
     await db.collection("users").doc(doc.id).set({ streakData: uData }, { merge: true });
     alert("Gespeichert");
-}
-
-/* ===== STARS ===== */
-const starsCont = document.getElementById("stars");
-for (let i = 0; i < 50; i++) {
-    const s = document.createElement("div"); s.className = "star";
-    s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 100 + "%";
-    s.style.animationDuration = (2 + Math.random() * 3) + "s";
-    s.style.animationDelay = Math.random() * 5 + "s";
-    starsCont.appendChild(s);
 }
 </script>
 </body>
