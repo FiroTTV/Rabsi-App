@@ -527,10 +527,15 @@ function renderStats(monthKey) {
         statsGrid.appendChild(cell);
     }
 
-    statsSummary.innerHTML = `
-        🟢 ${success} Tage clean<br>
-        🔴 ${fail} Tage gekaut
-    `;
+   const total = success + fail;
+   const percent = total ? Math.round((success / total) * 100) : 0;
+
+statsSummary.innerHTML = `
+    🟢 ${success} Tage clean<br>
+    🔴 ${fail} Tage gekaut<br>
+    📈 ${percent}% clean
+`;
+
 }
 
 /* ===== LOGOUT ===== */
@@ -538,3 +543,4 @@ function logout() { auth.signOut(); }
 </script>
 </body>
 </html>
+
