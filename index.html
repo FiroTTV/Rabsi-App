@@ -69,7 +69,6 @@ body {
 
 h1 { text-align: center; margin-bottom: 8px; }
 
-/* Navigation Header */
 .nav-header {
     display: flex;
     justify-content: space-between;
@@ -158,12 +157,26 @@ button:disabled {
     font-weight: 600;
     background: #333;
 }
-.future  { background: #444; opacity: 0.5; }
+.future  { background: #444; opacity: 0.3; }
 .success { background: #4cd964 !important; color: #000; }
 .fail     { background: #ff5c5c !important; }
 .today   { outline: 3px solid #7a5cff; }
 
-/* ===== GIFT ===== */
+/* ===== STATS MODAL SPEZIAL ===== */
+.stats-summary-card {
+    background: #2a2a3d;
+    padding: 15px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+}
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+.stats-val { font-weight: bold; color: #c7b3ff; }
+
 .gift {
     text-align: center;
     padding: 14px;
@@ -177,22 +190,24 @@ button:disabled {
     font-weight: 700;
 }
 
-/* ===== MODALS ===== */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.8);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 .modal-content {
     background: #1c1c28;
-    padding: 20px;
-    border-radius: 20px;
+    padding: 24px;
+    border-radius: 24px;
     width: 90%;
     max-width: 400px;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .stats-grid {
@@ -208,14 +223,15 @@ button:disabled {
     align-items: center;
     justify-content: center;
     font-size: 12px;
+    color: #fff;
 }
 
 input, select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border-radius: 10px;
     border: none;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     background: #2a2a3d;
     color: white;
 }
@@ -236,16 +252,16 @@ input, select {
     <h1>🔥 Rabsi's Nail-Streak</h1>
 
     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <button onclick="openStats()" style="flex:1; margin-bottom: 0;">📊 Statistik</button>
-        <button onclick="openAccount()" style="flex:1; margin-bottom: 0;">⚙️ Account</button>
+        <button onclick="openStats()" style="flex:1; margin-bottom: 0; background: #7a5cff; color: white;">📊 Statistik</button>
+        <button onclick="openAccount()" style="flex:1; margin-bottom: 0; background: #3a3a55; color: white;">⚙️ Account</button>
     </div>
-    <button id="adminToggle">👑 Admin-Modus: AUS</button>
+    <button id="adminToggle" style="background: transparent; color: #888; border: 1px solid #444; font-size: 12px; padding: 6px;">Admin: AUS</button>
 
     <hr style="border: 0.5px solid #333; margin: 16px 0;">
 
     <div class="nav-header">
         <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
-        <div class="subtitle" id="monthTitle">Laden...</div>
+        <div class="subtitle" id="monthTitle">...</div>
         <button class="nav-btn" onclick="changeMonth(1)">▶</button>
     </div>
 
@@ -255,7 +271,6 @@ input, select {
         <div>Mo</div><div>Di</div><div>Mi</div>
         <div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
     </div>
-
     <div class="calendar" id="calendar"></div>
 
     <div class="buttons">
@@ -264,17 +279,22 @@ input, select {
     </div>
 
     <div class="gift locked" id="giftBox">🔒 Geschenk gesperrt</div>
-
-    <button onclick="logout()" style="background: transparent; color: #888; margin-top: 10px;">🚪 Logout</button>
+    <button onclick="logout()" style="background: transparent; color: #888; font-size: 12px; margin-top: 15px;">🚪 Abmelden</button>
 </div>
 
 <div class="modal" id="statsModal">
     <div class="modal-content">
-        <h2>📊 Statistik</h2>
+        <h2 style="margin-top: 0;">📊 Analyse</h2>
+        
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 5px;">Zeitraum wählen:</p>
         <select id="monthSelect"></select>
-        <div id="statsSummary"></div>
+
+        <div class="stats-summary-card" id="statsSummary">
+            </div>
+
         <div class="stats-grid" id="statsGrid"></div>
-        <button onclick="closeStats()">Schließen</button>
+
+        <button onclick="closeStats()" style="background: #444; color: white; margin-top: 10px;">Schließen</button>
     </div>
 </div>
 
@@ -282,22 +302,18 @@ input, select {
     <div class="modal-content">
         <h2>⚙️ Account</h2>
         <p><b>E-Mail:</b> <span id="accEmail"></span></p>
-        <p><b>User-ID:</b><br><small id="accUid"></small></p>
-        <p><b>Gespeicherte Tage:</b> <span id="accDays"></span></p>
+        <p><b>Status:</b> <span id="accDays"></span> Einträge</p>
 
-        <hr>
-        <h3>👑 Admin: Account bearbeiten</h3>
-
-        <input id="editEmail" placeholder="E-Mail des Accounts">
+        <hr style="border-color: #333;">
+        <h3>👑 Admin-Edit</h3>
+        <input id="editEmail" placeholder="User E-Mail">
         <input id="editDate" type="date">
-
         <select id="editValue">
             <option value="success">✅ clean</option>
             <option value="fail">❌ gekaut</option>
             <option value="">⬜ löschen</option>
         </select>
-
-        <button onclick="adminEditProgress()" style="background: #7a5cff; color: white;">💾 Progress setzen</button>
+        <button onclick="adminEditProgress()" style="background: #7a5cff; color: white;">💾 Speichern</button>
         <button onclick="closeAccount()">Schließen</button>
     </div>
 </div>
@@ -313,71 +329,26 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-.catch(err => console.warn(err));
-
-/* ===== STARS ===== */
-const stars = document.getElementById("stars");
-for (let i = 0; i < 40; i++) {
-    const s = document.createElement("div");
-    s.className = "star";
-    s.style.left = Math.random() * 100 + "vw";
-    s.style.top = Math.random() * 100 + "vh";
-    s.style.animationDuration = 20 + Math.random() * 20 + "s";
-    stars.appendChild(s);
-}
-
 /* ===== STATE ===== */
 let data = {};
 let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
-let displayDate = new Date(); // Welcher Monat wird gerade angezeigt?
+let displayDate = new Date();
 displayDate.setDate(1); 
-const today = new Date(); // Das echte "Jetzt"
+const today = new Date();
 
 /* ===== LOGIN ===== */
 async function login() {
-    const e = email.value.trim();
-    const p = password.value.trim();
-    if (!e || !p) return alert("Bitte E-Mail & Passwort eingeben");
-    try {
-        await auth.signInWithEmailAndPassword(e, p);
-    } catch (err) {
-        if (err.code === "auth/user-not-found") {
-            await auth.createUserWithEmailAndPassword(e, p);
-        } else {
-            alert(err.message);
-        }
-    }
+    const e = email.value.trim(); const p = password.value.trim();
+    if (!e || !p) return alert("E-Mail & Passwort fehlen");
+    try { await auth.signInWithEmailAndPassword(e, p); } 
+    catch (err) { if (err.code === "auth/user-not-found") await auth.createUserWithEmailAndPassword(e, p); else alert(err.message); }
 }
 
-/* ===== NAVIGATION ===== */
-function changeMonth(delta) {
-    displayDate.setMonth(displayDate.getMonth() + delta);
-    updateAppView();
-}
-
-function updateAppView() {
-    monthTitle.textContent = displayDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
-    buildCalendar();
-    updateStreak();
-    checkGift();
-}
-
-/* ===== AUTH STATE ===== */
+/* ===== AUTH ===== */
 auth.onAuthStateChanged(user => {
-    if (!user) {
-        loginBox.classList.remove("hidden");
-        appBox.classList.add("hidden");
-        return;
-    }
-    loginBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
-
+    if (!user) { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); return; }
+    loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
     accEmail.textContent = user.email;
-    accUid.textContent = user.uid;
-
-    db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
-
     db.collection("users").doc(user.uid).onSnapshot(doc => {
         data = doc.data()?.streakData || {};
         accDays.textContent = Object.keys(data).length;
@@ -387,225 +358,164 @@ auth.onAuthStateChanged(user => {
     });
 });
 
-/* ===== HELPERS ===== */
-function keyFor(y, m, d) {
-    return `${y}-${String(m + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+/* ===== LOGIK ===== */
+function changeMonth(delta) { displayDate.setMonth(displayDate.getMonth() + delta); updateAppView(); }
+function keyFor(y, m, d) { return `${y}-${String(m + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+
+function updateAppView() {
+    monthTitle.textContent = displayDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
+    buildCalendar();
+    updateStreakDisplay();
+    checkGift();
 }
 
-function getTodayKey() {
-    return keyFor(today.getFullYear(), today.getMonth(), today.getDate());
-}
-
-/* ===== TIME LOCK ===== */
-function applyTimeLock() {
-    const hour = today.getHours();
-    if (hour < 20 && !isAdmin) {
-        btnYes.disabled = true;
-        btnNo.disabled = true;
-        btnYes.textContent = "⏰ Ab 20:00 Uhr";
-        btnNo.textContent = "⏰ Ab 20:00 Uhr";
-    } else {
-        btnYes.disabled = false;
-        btnNo.disabled = false;
-        btnYes.textContent = "Heute nicht gekaut ✅";
-        btnNo.textContent = "Heute gekaut ❌";
-    }
-}
-
-/* ===== CALENDAR ===== */
 function buildCalendar() {
     calendar.innerHTML = "";
-    const y = displayDate.getFullYear();
-    const m = displayDate.getMonth();
-    
-    const firstDay = new Date(y, m, 1);
-    const offset = (firstDay.getDay() + 6) % 7;
-    const daysInSelectedMonth = new Date(y, m + 1, 0).getDate();
-
+    const y = displayDate.getFullYear(), m = displayDate.getMonth();
+    const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+    const dim = new Date(y, m + 1, 0).getDate();
     for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
-
-    for (let d = 1; d <= daysInSelectedMonth; d++) {
-        const el = document.createElement("div");
-        el.className = "day";
-        el.textContent = d;
-
+    for (let d = 1; d <= dim; d++) {
+        const el = document.createElement("div"); el.className = "day"; el.textContent = d;
         const key = keyFor(y, m, d);
-        const dateObj = new Date(y, m, d);
-
-        if (dateObj > today) el.classList.add("future");
+        if (new Date(y, m, d) > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
-        
-        // Heute markieren
-        if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) {
-            el.classList.add("today");
-        }
-
+        if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) el.classList.add("today");
         calendar.appendChild(el);
     }
 }
 
-/* ===== STREAK ===== */
-function updateStreak() {
-    const todayKey = getTodayKey();
-    if (data[todayKey] !== "success") {
-        // Wenn heute noch nichts ist, schauen wir ab gestern rückwärts
-        let streak = 0;
-        let checkDate = new Date(today);
-        checkDate.setDate(checkDate.getDate() - 1);
-        
-        while (true) {
-            let k = keyFor(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
-            if (data[k] === "success") {
-                streak++;
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else break;
-        }
-        streakBox.textContent = `🔥 ${streak} Tage Streak`;
-        return;
+function updateStreakDisplay() {
+    let streak = 0; let check = new Date(today);
+    // Wenn heute noch kein Erfolg, ab gestern prüfen
+    if (data[keyFor(check.getFullYear(), check.getMonth(), check.getDate())] !== "success") {
+        check.setDate(check.getDate() - 1);
     }
-
-    let streak = 0;
-    let checkDate = new Date(today);
-    while (true) {
-        let k = keyFor(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
-        if (data[k] === "success") {
-            streak++;
-            checkDate.setDate(checkDate.getDate() - 1);
-        } else break;
+    while (data[keyFor(check.getFullYear(), check.getMonth(), check.getDate())] === "success") {
+        streak++; check.setDate(check.getDate() - 1);
     }
     streakBox.textContent = `🔥 ${streak} Tage Streak`;
 }
 
-/* ===== GIFT ===== */
-function checkGift() {
-    const y = displayDate.getFullYear();
-    const m = displayDate.getMonth();
-    const dim = new Date(y, m + 1, 0).getDate();
-    
-    let allSuccess = true;
-    let entries = 0;
-
-    for (let d = 1; d <= dim; d++) {
-        const key = keyFor(y, m, d);
-        if (data[key] === "success") {
-            entries++;
-        } else if (new Date(y, m, d) <= today) {
-            allSuccess = false;
-        }
-    }
-
-    if (allSuccess && entries > 0) {
-        giftBox.className = "gift unlocked";
-        giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br><br>Rabsi, ich bin unfassbar stolz auf dich 💖";
-    } else {
-        giftBox.className = "gift locked";
-        giftBox.textContent = "🔒 Geschenk gesperrt";
-    }
+function applyTimeLock() {
+    const isLocked = today.getHours() < 20 && !isAdmin;
+    btnYes.disabled = isLocked; btnNo.disabled = isLocked;
+    if (isLocked) { btnYes.textContent = "⏰ Ab 20h"; btnNo.textContent = "⏰ Ab 20h"; }
+    else { btnYes.textContent = "Nicht gekaut ✅"; btnNo.textContent = "Gekaut ❌"; }
 }
 
-/* ===== SAVE ===== */
-btnYes.onclick = () => saveToday("success");
-btnNo.onclick  = () => saveToday("fail");
-
-function saveToday(result) {
-    const key = getTodayKey();
+btnYes.onclick = () => save("success");
+btnNo.onclick = () => save("fail");
+function save(val) {
+    const key = keyFor(today.getFullYear(), today.getMonth(), today.getDate());
     if (data[key]) return;
-
-    data[key] = result;
-    db.collection("users").doc(auth.currentUser.uid).set({
-        streakData: data
-    }, { merge: true });
+    data[key] = val;
+    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
 
-/* ===== ADMIN ===== */
-const adminToggle = document.getElementById("adminToggle");
-function updateAdminUI() {
-    adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
-}
-adminToggle.onclick = () => {
-    isAdmin = !isAdmin;
-    localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
-    updateAdminUI();
-    applyTimeLock();
-};
+/* ===== DETAILLIERTE STATISTIK ===== */
+function openStats() { statsModal.style.display = "flex"; buildStatsOptions(); }
+function closeStats() { statsModal.style.display = "none"; }
 
-async function adminEditProgress() {
-    try {
-        if (!isAdmin) { alert("Kein Admin-Zugriff"); return; }
-        const email = editEmail.value.trim();
-        const dateStr = editDate.value;
-        const value = editValue.value;
-        if (!email || !dateStr) { alert("E-Mail und Datum angeben"); return; }
-
-        const d = new Date(dateStr + "T12:00:00");
-        const key = keyFor(d.getFullYear(), d.getMonth(), d.getDate());
-
-        const snap = await db.collection("users").where("email", "==", email).limit(1).get();
-        if (snap.empty) { alert("Account nicht gefunden"); return; }
-
-        const doc = snap.docs[0];
-        const raw = doc.data();
-        const userData = raw.streakData ? { ...raw.streakData } : {};
-
-        if (value === "") delete userData[key];
-        else userData[key] = value;
-
-        await db.collection("users").doc(doc.id).set({
-            streakData: userData
-        }, { merge: true });
-
-        alert("✅ Progress aktualisiert");
-    } catch (err) {
-        alert(err.message);
-    }
-}
-
-/* ===== MODALS & STATS ===== */
-function openStats(){ statsModal.style.display = "flex"; buildStats(); }
-function closeStats(){ statsModal.style.display = "none"; }
-function openAccount(){ accountModal.style.display = "flex"; }
-function closeAccount(){ accountModal.style.display = "none"; }
-
-function buildStats() {
+function buildStatsOptions() {
     monthSelect.innerHTML = "";
-    const months = [...new Set(Object.keys(data).map(k => k.slice(0,7)))].sort().reverse();
-    if (months.length === 0) {
-        statsSummary.textContent = "Noch keine Daten vorhanden.";
-        return;
-    }
+    const keys = Object.keys(data).map(k => k.slice(0, 7));
+    const months = [...new Set(keys)].sort().reverse();
+    if (months.length === 0) { statsSummary.innerHTML = "Noch keine Daten vorhanden."; return; }
     months.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
-        monthSelect.appendChild(opt);
+        const opt = document.createElement("option"); opt.value = m; opt.textContent = m; monthSelect.appendChild(opt);
     });
-    monthSelect.onchange = () => renderStats(monthSelect.value);
-    renderStats(monthSelect.value);
+    monthSelect.onchange = () => renderDetailedStats(monthSelect.value);
+    renderDetailedStats(monthSelect.value);
 }
 
-function renderStats(monthKey) {
+function renderDetailedStats(monthKey) {
     statsGrid.innerHTML = "";
-    if (!monthKey) return;
-    let success = 0, fail = 0;
     const [y, m] = monthKey.split("-").map(Number);
     const dim = new Date(y, m, 0).getDate();
+    let success = 0, fail = 0;
 
+    // Aktueller Monat
     for (let d = 1; d <= dim; d++) {
         const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const cell = document.createElement("div");
-        cell.textContent = d;
+        const cell = document.createElement("div"); cell.textContent = d;
         cell.style.background = "#333";
         if (data[key] === "success") { cell.style.background = "#4cd964"; success++; }
-        if (data[key] === "fail")    { cell.style.background = "#ff5c5c"; fail++; }
+        else if (data[key] === "fail") { cell.style.background = "#ff5c5c"; fail++; }
         statsGrid.appendChild(cell);
     }
+
+    // Rekord-Streak berechnen (All-Time)
+    let maxStreak = 0, tempStreak = 0;
+    const sortedKeys = Object.keys(data).sort();
+    sortedKeys.forEach(k => {
+        if (data[k] === "success") { tempStreak++; if (tempStreak > maxStreak) maxStreak = tempStreak; }
+        else tempStreak = 0;
+    });
+
+    // Vormonat-Vergleich
+    const prevDate = new Date(y, m - 2, 1);
+    const prevKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,"0")}`;
+    let prevSuccess = 0;
+    Object.keys(data).forEach(k => { if(k.startsWith(prevKey) && data[k] === "success") prevSuccess++; });
+
     const total = success + fail;
-    const percent = total ? Math.round((success / total) * 100) : 0;
-    statsSummary.innerHTML = `🟢 ${success} clean | 🔴 ${fail} gekaut<br>📈 <b>${percent}% Erfolgsquote</b>`;
+    const rate = total ? Math.round((success / total) * 100) : 0;
+    const trend = success >= prevSuccess ? "📈 Verbessert" : "📉 Weniger als Vormonat";
+
+    statsSummary.innerHTML = `
+        <div class="stats-row"><span>Erfolgsquote:</span> <span class="stats-val">${rate}%</span></div>
+        <div class="stats-row"><span>Clean Tage:</span> <span class="stats-val">${success}</span></div>
+        <div class="stats-row"><span>Gekaut:</span> <span class="stats-val" style="color:#ff8a8a">${fail}</span></div>
+        <div class="stats-row"><span>Längster Rekord:</span> <span class="stats-val">🔥 ${maxStreak} Tage</span></div>
+        <div class="stats-row" style="margin-top:10px; font-style:italic; border-top:1px solid #444; padding-top:5px;">
+            <span>Trend:</span> <span style="color: ${success >= prevSuccess ? '#7be495' : '#ff8a8a'}">${trend}</span>
+        </div>
+    `;
 }
 
+/* ===== REST ===== */
+function checkGift() {
+    const y = displayDate.getFullYear(), m = displayDate.getMonth();
+    const dim = new Date(y, m + 1, 0).getDate();
+    let ok = true, count = 0;
+    for (let d = 1; d <= dim; d++) {
+        const key = keyFor(y, m, d);
+        if (data[key] === "success") count++;
+        else if (new Date(y, m, d) <= today) ok = false;
+    }
+    if (ok && count > 0) { giftBox.className = "gift unlocked"; giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉"; }
+    else { giftBox.className = "gift locked"; giftBox.textContent = "🔒 Geschenk gesperrt"; }
+}
+
+function updateAdminUI() { adminToggle.textContent = isAdmin ? "Admin: AN" : "Admin: AUS"; }
+adminToggle.onclick = () => { isAdmin = !isAdmin; localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0"); updateAdminUI(); applyTimeLock(); };
+function openAccount() { accountModal.style.display = "flex"; }
+function closeAccount() { accountModal.style.display = "none"; }
 function logout() { auth.signOut(); }
+
+async function adminEditProgress() {
+    const email = editEmail.value.trim(), dateStr = editDate.value, val = editValue.value;
+    if (!email || !dateStr) return alert("Daten fehlen");
+    const d = new Date(dateStr + "T12:00:00");
+    const key = keyFor(d.getFullYear(), d.getMonth(), d.getDate());
+    const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (snap.empty) return alert("User nicht gefunden");
+    const doc = snap.docs[0];
+    const uData = doc.data().streakData || {};
+    if (val === "") delete uData[key]; else uData[key] = val;
+    await db.collection("users").doc(doc.id).set({ streakData: uData }, { merge: true });
+    alert("Gespeichert");
+}
+
+/* ===== STARS ANIMATION BACKGROUND ===== */
+const starsContainer = document.getElementById("stars");
+for (let i = 0; i < 40; i++) {
+    const s = document.createElement("div"); s.className = "star";
+    s.style.left = Math.random() * 100 + "vw"; s.style.top = Math.random() * 100 + "vh";
+    s.style.animationDuration = 20 + Math.random() * 20 + "s"; starsContainer.appendChild(s);
+}
 </script>
 </body>
 </html>
