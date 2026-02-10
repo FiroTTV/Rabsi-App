@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Rabsi – Nail Streak 💅</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1a2e">
@@ -28,6 +28,7 @@ html, body {
     background: var(--bg-gradient);
     color: #ffffff;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -63,7 +64,7 @@ body {
     position: relative;
     z-index: 2;
     background: rgba(30, 27, 46, 0.95);
-    width: 100%;
+    width: 90%;
     max-width: 420px;
     border-radius: 28px;
     padding: 24px;
@@ -72,14 +73,14 @@ body {
 }
 .hidden { display: none !important; }
 
-h1 { text-align: center; margin-bottom: 16px; font-weight: 800; }
+h1 { text-align: center; margin-bottom: 16px; font-weight: 800; font-size: 1.5rem; }
 
 .top-nav {
     display: flex;
     gap: 10px;
     margin-bottom: 12px;
 }
-.top-nav button { margin-bottom: 0; flex: 1; background: #3a3a55; color: white; }
+.top-nav button { margin-bottom: 0; flex: 1; background: #3a3a55; color: white; padding: 10px; }
 
 #adminToggle {
     background: transparent;
@@ -136,8 +137,10 @@ button {
     font-weight: 700;
     cursor: pointer;
     margin-bottom: 10px;
-    transition: opacity 0.2s;
+    transition: transform 0.1s, opacity 0.2s;
 }
+button:active { transform: scale(0.98); }
+
 .buttons { display: flex; gap: 12px; margin-bottom: 20px; }
 .buttons button { width: 50%; margin-bottom: 0; }
 
@@ -150,7 +153,7 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
     opacity: 0.6;
     margin-bottom: 8px;
@@ -158,54 +161,57 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 20px;
 }
 .day {
     aspect-ratio: 1;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     background: #333;
-    font-size: 14px;
+    font-size: 13px;
 }
-.future  { background: #444; opacity: 0.3; }
+.future  { background: #444; opacity: 0.2; }
 .success { background: var(--success) !important; color: #000; }
 .fail     { background: var(--fail) !important; color: #000; }
-.today   { outline: 3px solid var(--accent); outline-offset: -3px; }
+.today   { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* ===== GIFT ===== */
 .gift {
     text-align: center;
-    padding: 16px;
+    padding: 18px;
     border-radius: 16px;
     background: #2a2a3d;
+    transition: all 0.3s ease;
 }
-.locked { color: #777; border: 1px dashed #444; }
+.locked { color: #888; border: 1px dashed #444; font-size: 14px; }
 .unlocked {
-    background: linear-gradient(135deg, gold, orange);
+    background: linear-gradient(135deg, #ffd700, #ffa500);
     color: #000;
     font-weight: 800;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    transform: scale(1.02);
 }
 
 /* ===== MODAL ===== */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.85);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
 }
 .modal-content {
     background: #1c1c28;
     padding: 24px;
     border-radius: 24px;
-    width: 90%;
+    width: 85%;
     max-width: 400px;
     max-height: 80vh;
     overflow-y: auto;
@@ -216,16 +222,18 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
     border-radius: 15px;
     margin-bottom: 15px;
     font-size: 14px;
+    line-height: 1.5;
 }
 
 input, select {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     border-radius: 12px;
     border: none;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     background: #2a2a3d;
     color: white;
+    font-size: 16px; /* Verhindert Auto-Zoom auf iOS */
     box-sizing: border-box;
 }
 </style>
@@ -268,7 +276,7 @@ input, select {
         <button class="no" id="btnNo">Heute gekaut ❌</button>
     </div>
 
-    <div class="gift locked" id="giftBox"></div>
+    <div class="gift locked" id="giftBox">🔒 Lädt...</div>
 
     <button onclick="logout()" style="background:transparent; color:#888; font-size:12px; margin-top:10px;">🚪 Logout</button>
 </div>
@@ -288,9 +296,9 @@ input, select {
         <h2>⚙️ Account</h2>
         <p><b>E-Mail:</b> <span id="accEmail"></span></p>
         <p><b>Einträge:</b> <span id="accDays"></span></p>
-        <hr style="border:0.5px solid #333">
+        <hr style="border:0.5px solid #333; margin: 15px 0;">
         <h3>Admin Edit</h3>
-        <input id="editEmail" placeholder="Account E-Mail">
+        <input id="editEmail" placeholder="User E-Mail">
         <input id="editDate" type="date">
         <select id="editValue">
             <option value="success">✅ clean</option>
@@ -303,7 +311,7 @@ input, select {
 </div>
 
 <script>
-/* ===== FIREBASE INITIALISIERUNG ===== */
+/* ===== FIREBASE SETUP ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
   authDomain: "rabsi-nail-streak.firebaseapp.com",
@@ -314,12 +322,14 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* ===== HILFSELEMENTE ===== */
-const loginBox = document.getElementById("loginBox");
-const appBox = document.getElementById("appBox");
-const loginBtn = document.getElementById("loginBtn");
+/* ===== STATE & GLOBALS ===== */
+let data = {};
+let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
+let displayDate = new Date();
+displayDate.setDate(1); 
+const today = new Date();
 
-/* ===== STARS ===== */
+/* ===== ANIMATION BACKGROUND ===== */
 const starsContainer = document.getElementById("stars");
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div");
@@ -330,22 +340,15 @@ for (let i = 0; i < 40; i++) {
     starsContainer.appendChild(s);
 }
 
-/* ===== STATE ===== */
-let data = {};
-let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
-let displayDate = new Date();
-displayDate.setDate(1); 
-const today = new Date();
-
-/* ===== AUTH LOGIK ===== */
+/* ===== AUTH HANDLER ===== */
 auth.onAuthStateChanged(user => {
     if (!user) {
-        loginBox.classList.remove("hidden");
-        appBox.classList.add("hidden");
+        document.getElementById("loginBox").classList.remove("hidden");
+        document.getElementById("appBox").classList.add("hidden");
         return;
     }
-    loginBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("appBox").classList.remove("hidden");
     document.getElementById("accEmail").textContent = user.email;
 
     db.collection("users").doc(user.uid).onSnapshot(doc => {
@@ -354,38 +357,35 @@ auth.onAuthStateChanged(user => {
         updateAppView();
         updateAdminUI();
         applyTimeLock();
-    }, err => console.error("Firestore Error:", err));
+    });
 });
 
 async function login() {
     const e = document.getElementById("email").value.trim();
     const p = document.getElementById("password").value.trim();
+    const btn = document.getElementById("loginBtn");
     
-    if (!e || !p) return alert("Bitte E-Mail und Passwort eingeben");
+    if (!e || !p) return alert("Daten eingeben");
     
-    // UI Feedback
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Wird verarbeitet...";
+    btn.disabled = true;
+    btn.textContent = "Lädt...";
 
     try {
-        // Erster Versuch: Login
         await auth.signInWithEmailAndPassword(e, p);
     } catch (err) {
-        // Falls Login fehlschlägt (z.B. User existiert nicht oder Passwort falsch für neuen User)
-        // Versuchen wir eine Registrierung
         try {
+            // Automatischer Fallback zur Registrierung (für iOS Komfort)
             await auth.createUserWithEmailAndPassword(e, p);
         } catch (regErr) {
-            console.error("Auth Error:", regErr);
-            alert("Fehler: " + regErr.message);
+            alert("Login fehlgeschlagen: " + regErr.message);
         }
     } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Einloggen / Registrieren";
+        btn.disabled = false;
+        btn.textContent = "Einloggen / Registrieren";
     }
 }
 
-/* ===== APP LOGIK ===== */
+/* ===== APP LOGIC ===== */
 function changeMonth(delta) {
     displayDate.setMonth(displayDate.getMonth() + delta);
     updateAppView();
@@ -401,92 +401,102 @@ function updateAppView() {
 function applyTimeLock() {
     const hour = new Date().getHours();
     const isLocked = hour < 20 && !isAdmin;
-    const btnYes = document.getElementById("btnYes");
-    const btnNo = document.getElementById("btnNo");
-    
-    btnYes.disabled = isLocked; 
-    btnNo.disabled = isLocked;
-    btnYes.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute nicht gekaut ✅";
-    btnNo.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute gekaut ❌";
+    const bY = document.getElementById("btnYes"), bN = document.getElementById("btnNo");
+    bY.disabled = isLocked; bN.disabled = isLocked;
+    bY.textContent = isLocked ? "⏰ Ab 20:00" : "Heute nicht gekaut ✅";
+    bN.textContent = isLocked ? "⏰ Ab 20:00" : "Heute gekaut ❌";
 }
 
 function buildCalendar() {
-    const calEl = document.getElementById("calendar");
-    calEl.innerHTML = "";
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
     const offset = (new Date(y, m, 1).getDay() + 6) % 7;
     const dim = new Date(y, m + 1, 0).getDate();
 
-    for (let i = 0; i < offset; i++) calEl.appendChild(document.createElement("div"));
+    for (let i = 0; i < offset; i++) cal.appendChild(document.createElement("div"));
     for (let d = 1; d <= dim; d++) {
-        const el = document.createElement("div"); 
-        el.className = "day"; 
-        el.textContent = d;
+        const el = document.createElement("div"); el.className = "day"; el.textContent = d;
         const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        
-        const cellDate = new Date(y, m, d);
-        if (cellDate > today) el.classList.add("future");
+        const cDate = new Date(y, m, d);
+        if (cDate > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
         if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) el.classList.add("today");
-        
-        calEl.appendChild(el);
+        cal.appendChild(el);
     }
 }
 
 function updateStreak() {
     let streak = 0, check = new Date(today);
     const key = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    
-    // Falls heute noch nicht eingetragen, fange gestern an zu zählen
     if (data[key(check)] !== "success") check.setDate(check.getDate() - 1);
-    
-    while (data[key(check)] === "success") { 
-        streak++; 
-        check.setDate(check.getDate() - 1); 
-    }
+    while (data[key(check)] === "success") { streak++; check.setDate(check.getDate() - 1); }
     document.getElementById("streakBox").textContent = `🔥 ${streak} Tage Streak`;
 }
 
 function saveToday(res) {
     const k = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
-    if (data[k] && !isAdmin) return alert("Heute wurde bereits abgestimmt!");
-    
+    if (data[k] && !isAdmin) return;
     data[k] = res;
-    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true })
-      .then(() => console.log("Gespeichert"))
-      .catch(e => alert("Fehler beim Speichern"));
+    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
-
 document.getElementById("btnYes").onclick = () => saveToday("success");
 document.getElementById("btnNo").onclick = () => saveToday("fail");
 
-/* ===== STATS ===== */
-function openStats(){ 
-    document.getElementById("statsModal").style.display = "flex"; 
-    buildStatsOptions(); 
+/* ===== GIFT LOGIC (CORRECTED) ===== */
+function checkGift() {
+    const giftBox = document.getElementById("giftBox");
+    const y = displayDate.getFullYear(), m = displayDate.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    
+    let successCount = 0;
+    let hasFail = false;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        if (data[k] === "success") successCount++;
+        else if (data[k] === "fail") hasFail = true;
+    }
+
+    // Geschenk nur wenn JEDER Tag im Monat "success" ist
+    const monthFinished = (successCount === daysInMonth);
+
+    if (hasFail) {
+        giftBox.className = "gift locked";
+        giftBox.style.opacity = "0.6";
+        giftBox.textContent = "❌ Geschenk für diesen Monat verloren";
+    } else if (monthFinished) {
+        giftBox.className = "gift unlocked";
+        giftBox.style.opacity = "1";
+        giftBox.innerHTML = "🎁 MONATSKÖNIGIN 🎉<br>Alles geschafft! Ich bin stolz auf dich!";
+    } else {
+        giftBox.className = "gift locked";
+        giftBox.style.opacity = "1";
+        const remaining = daysInMonth - successCount;
+        giftBox.textContent = `🔒 Noch ${remaining} Tage bis zum Geschenk!`;
+    }
 }
+
+/* ===== MODALS & ADMIN ===== */
+function openStats(){ document.getElementById("statsModal").style.display = "flex"; buildStatsOptions(); }
 function closeStats(){ document.getElementById("statsModal").style.display = "none"; }
+function openAccount(){ document.getElementById("accountModal").style.display = "flex"; }
+function closeAccount(){ document.getElementById("accountModal").style.display = "none"; }
 
 function buildStatsOptions() {
     const sel = document.getElementById("monthSelect");
     sel.innerHTML = "";
     const keys = Object.keys(data).map(k => k.slice(0, 7));
     const months = [...new Set(keys)].sort().reverse();
-    
     if (months.length === 0) {
-        document.getElementById("statsSummary").innerHTML = "Noch keine Daten vorhanden.";
-        document.getElementById("statsGrid").innerHTML = "";
+        document.getElementById("statsSummary").innerHTML = "Keine Daten.";
         return;
     }
-
     months.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = m;
+        const opt = document.createElement("option"); opt.value = m; opt.textContent = m;
         sel.appendChild(opt);
     });
-
     sel.onchange = () => renderStats(sel.value);
     renderStats(sel.value);
 }
@@ -494,83 +504,43 @@ function buildStatsOptions() {
 function renderStats(monthKey) {
     const grid = document.getElementById("statsGrid");
     grid.innerHTML = "";
-    if (!monthKey) return;
-
     const [y, m] = monthKey.split("-").map(Number);
     const dim = new Date(y, m, 0).getDate();
-    let sCount = 0, fCount = 0;
+    let s = 0, f = 0;
 
     for (let d = 1; d <= dim; d++) {
-        const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const cell = document.createElement("div");
-        cell.className = "day";
-        cell.textContent = d;
-        if (data[key] === "success") { cell.classList.add("success"); sCount++; }
-        if (data[key] === "fail") { cell.classList.add("fail"); fCount++; }
+        const k = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const cell = document.createElement("div"); cell.className = "day"; cell.textContent = d;
+        if (data[k] === "success") { cell.classList.add("success"); s++; }
+        if (data[k] === "fail") { cell.classList.add("fail"); f++; }
         grid.appendChild(cell);
     }
-
-    let best = 0, tmp = 0;
-    Object.keys(data).sort().forEach(k => {
-        if (data[k] === "success") { tmp++; if (tmp > best) best = tmp; } else tmp = 0;
-    });
-
-    const perc = (sCount + fCount) > 0 ? Math.round((sCount / (sCount + fCount)) * 100) : 0;
-    document.getElementById("statsSummary").innerHTML = `🟢 Clean: <b>${sCount}</b> | 🔴 Gekaut: <b>${fCount}</b><br>📈 Quote: <b>${perc}%</b> | 🏆 Rekord: <b>${best} Tage</b>`;
+    const perc = (s+f) > 0 ? Math.round((s/(s+f))*100) : 0;
+    document.getElementById("statsSummary").innerHTML = `🟢 Clean: ${s} | 🔴 Gekaut: ${f}<br>📈 Quote: ${perc}%`;
 }
 
-/* ===== ADMIN & ACC ===== */
 function toggleAdmin() {
     isAdmin = !isAdmin;
     localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
-    updateAdminUI(); applyTimeLock();
+    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS";
+    applyTimeLock();
 }
-function updateAdminUI() { 
-    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; 
-}
-function openAccount(){ document.getElementById("accountModal").style.display = "flex"; }
-function closeAccount(){ document.getElementById("accountModal").style.display = "none"; }
+function updateAdminUI() { document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; }
 function logout() { auth.signOut(); }
-
-function checkGift() {
-    const giftBox = document.getElementById("giftBox");
-    const y = displayDate.getFullYear(), m = displayDate.getMonth();
-    let entries = 0, fail = false;
-    
-    for (let d = 1; d <= new Date(y, m+1, 0).getDate(); d++) {
-        const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        if (data[k] === "success") entries++;
-        else if (data[k] === "fail") fail = true;
-    }
-    
-    if (!fail && entries > 0) {
-        giftBox.className = "gift unlocked";
-        giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br>Ich bin stolz auf dich!";
-    } else {
-        giftBox.className = "gift locked";
-        giftBox.textContent = "🔒 Geschenk gesperrt";
-    }
-}
 
 async function adminEditProgress() {
     const email = document.getElementById("editEmail").value.trim();
     const date = document.getElementById("editDate").value;
     const val = document.getElementById("editValue").value;
-    
-    if (!email || !date) return alert("Daten unvollständig");
-    
-    const d = new Date(date + "T12:00:00");
+    if (!email || !date) return alert("Daten fehlen");
     const snap = await db.collection("users").where("email", "==", email).limit(1).get();
-    
     if (snap.empty) return alert("User nicht gefunden");
-    
     const doc = snap.docs[0], uData = doc.data().streakData || {};
+    const d = new Date(date + "T12:00:00");
     const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    
     if (val === "") delete uData[k]; else uData[k] = val;
-    
     await db.collection("users").doc(doc.id).set({ streakData: uData }, { merge: true });
-    alert("Gespeichert für " + email);
+    alert("Gespeichert!");
 }
 </script>
 </body>
