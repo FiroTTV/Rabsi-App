@@ -70,7 +70,7 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     border: 1px solid rgba(255,255,255,0.05);
 }
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 h1 { text-align: center; margin-bottom: 16px; font-weight: 800; }
 
@@ -136,6 +136,7 @@ button {
     font-weight: 700;
     cursor: pointer;
     margin-bottom: 10px;
+    transition: opacity 0.2s;
 }
 .buttons { display: flex; gap: 12px; margin-bottom: 20px; }
 .buttons button { width: 50%; margin-bottom: 0; }
@@ -225,6 +226,7 @@ input, select {
     margin-bottom: 10px;
     background: #2a2a3d;
     color: white;
+    box-sizing: border-box;
 }
 </style>
 </head>
@@ -234,9 +236,9 @@ input, select {
 
 <div class="app" id="loginBox">
     <h1>💜 Rabsi Login</h1>
-    <input id="email" placeholder="E-Mail">
+    <input id="email" type="email" placeholder="E-Mail" autocomplete="email">
     <input id="password" type="password" placeholder="Passwort">
-    <button class="yes" style="width:100%" onclick="login()">Einloggen / Registrieren</button>
+    <button class="yes" id="loginBtn" onclick="login()">Einloggen / Registrieren</button>
 </div>
 
 <div class="app hidden" id="appBox">
@@ -301,15 +303,21 @@ input, select {
 </div>
 
 <script>
-/* ===== FIREBASE ===== */
-firebase.initializeApp({
+/* ===== FIREBASE INITIALISIERUNG ===== */
+const firebaseConfig = {
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
   authDomain: "rabsi-nail-streak.firebaseapp.com",
   projectId: "rabsi-nail-streak",
   appId: "1:261656631522:web:9b79c2cbc0e1e8790126bb"
-});
+};
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+/* ===== HILFSELEMENTE ===== */
+const loginBox = document.getElementById("loginBox");
+const appBox = document.getElementById("appBox");
+const loginBtn = document.getElementById("loginBtn");
 
 /* ===== STARS ===== */
 const starsContainer = document.getElementById("stars");
@@ -329,7 +337,7 @@ let displayDate = new Date();
 displayDate.setDate(1); 
 const today = new Date();
 
-/* ===== AUTH ===== */
+/* ===== AUTH LOGIK ===== */
 auth.onAuthStateChanged(user => {
     if (!user) {
         loginBox.classList.remove("hidden");
@@ -338,95 +346,137 @@ auth.onAuthStateChanged(user => {
     }
     loginBox.classList.add("hidden");
     appBox.classList.remove("hidden");
-    accEmail.textContent = user.email;
+    document.getElementById("accEmail").textContent = user.email;
 
     db.collection("users").doc(user.uid).onSnapshot(doc => {
         data = doc.data()?.streakData || {};
-        accDays.textContent = Object.keys(data).length;
+        document.getElementById("accDays").textContent = Object.keys(data).length;
         updateAppView();
         updateAdminUI();
         applyTimeLock();
-    });
+    }, err => console.error("Firestore Error:", err));
 });
 
 async function login() {
-    const e = email.value.trim(), p = password.value.trim();
-    if (!e || !p) return alert("Daten eingeben");
-    try { await auth.signInWithEmailAndPassword(e, p); } 
-    catch (err) { if (err.code === "auth/user-not-found") await auth.createUserWithEmailAndPassword(e, p); else alert(err.message); }
+    const e = document.getElementById("email").value.trim();
+    const p = document.getElementById("password").value.trim();
+    
+    if (!e || !p) return alert("Bitte E-Mail und Passwort eingeben");
+    
+    // UI Feedback
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Wird verarbeitet...";
+
+    try {
+        // Erster Versuch: Login
+        await auth.signInWithEmailAndPassword(e, p);
+    } catch (err) {
+        // Falls Login fehlschlägt (z.B. User existiert nicht oder Passwort falsch für neuen User)
+        // Versuchen wir eine Registrierung
+        try {
+            await auth.createUserWithEmailAndPassword(e, p);
+        } catch (regErr) {
+            console.error("Auth Error:", regErr);
+            alert("Fehler: " + regErr.message);
+        }
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Einloggen / Registrieren";
+    }
 }
 
-/* ===== LOGIK ===== */
+/* ===== APP LOGIK ===== */
 function changeMonth(delta) {
     displayDate.setMonth(displayDate.getMonth() + delta);
     updateAppView();
 }
 
 function updateAppView() {
-    monthTitle.textContent = displayDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
+    document.getElementById("monthTitle").textContent = displayDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
     buildCalendar();
     updateStreak();
     checkGift();
 }
 
 function applyTimeLock() {
-    const hour = today.getHours();
+    const hour = new Date().getHours();
     const isLocked = hour < 20 && !isAdmin;
-    btnYes.disabled = isLocked; btnNo.disabled = isLocked;
+    const btnYes = document.getElementById("btnYes");
+    const btnNo = document.getElementById("btnNo");
+    
+    btnYes.disabled = isLocked; 
+    btnNo.disabled = isLocked;
     btnYes.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute nicht gekaut ✅";
     btnNo.textContent = isLocked ? "⏰ Ab 20:00 Uhr" : "Heute gekaut ❌";
 }
 
 function buildCalendar() {
-    calendar.innerHTML = "";
+    const calEl = document.getElementById("calendar");
+    calEl.innerHTML = "";
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
     const offset = (new Date(y, m, 1).getDay() + 6) % 7;
     const dim = new Date(y, m + 1, 0).getDate();
 
-    for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement("div"));
+    for (let i = 0; i < offset; i++) calEl.appendChild(document.createElement("div"));
     for (let d = 1; d <= dim; d++) {
-        const el = document.createElement("div"); el.className = "day"; el.textContent = d;
+        const el = document.createElement("div"); 
+        el.className = "day"; 
+        el.textContent = d;
         const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        if (new Date(y, m, d) > today) el.classList.add("future");
+        
+        const cellDate = new Date(y, m, d);
+        if (cellDate > today) el.classList.add("future");
         if (data[key] === "success") el.classList.add("success");
         if (data[key] === "fail") el.classList.add("fail");
         if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) el.classList.add("today");
-        calendar.appendChild(el);
+        
+        calEl.appendChild(el);
     }
 }
 
 function updateStreak() {
     let streak = 0, check = new Date(today);
     const key = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    
+    // Falls heute noch nicht eingetragen, fange gestern an zu zählen
     if (data[key(check)] !== "success") check.setDate(check.getDate() - 1);
-    while (data[key(check)] === "success") { streak++; check.setDate(check.getDate() - 1); }
-    streakBox.textContent = `🔥 ${streak} Tage Streak`;
+    
+    while (data[key(check)] === "success") { 
+        streak++; 
+        check.setDate(check.getDate() - 1); 
+    }
+    document.getElementById("streakBox").textContent = `🔥 ${streak} Tage Streak`;
 }
 
 function saveToday(res) {
     const k = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
-    if (data[k]) return;
+    if (data[k] && !isAdmin) return alert("Heute wurde bereits abgestimmt!");
+    
     data[k] = res;
-    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
+    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true })
+      .then(() => console.log("Gespeichert"))
+      .catch(e => alert("Fehler beim Speichern"));
 }
-btnYes.onclick = () => saveToday("success");
-btnNo.onclick = () => saveToday("fail");
 
-/* ===== STATS (FIXED) ===== */
+document.getElementById("btnYes").onclick = () => saveToday("success");
+document.getElementById("btnNo").onclick = () => saveToday("fail");
+
+/* ===== STATS ===== */
 function openStats(){ 
-    statsModal.style.display = "flex"; 
+    document.getElementById("statsModal").style.display = "flex"; 
     buildStatsOptions(); 
 }
-function closeStats(){ statsModal.style.display = "none"; }
+function closeStats(){ document.getElementById("statsModal").style.display = "none"; }
 
 function buildStatsOptions() {
-    monthSelect.innerHTML = "";
+    const sel = document.getElementById("monthSelect");
+    sel.innerHTML = "";
     const keys = Object.keys(data).map(k => k.slice(0, 7));
     const months = [...new Set(keys)].sort().reverse();
     
     if (months.length === 0) {
-        statsSummary.innerHTML = "Noch keine Daten vorhanden.";
-        statsGrid.innerHTML = "";
+        document.getElementById("statsSummary").innerHTML = "Noch keine Daten vorhanden.";
+        document.getElementById("statsGrid").innerHTML = "";
         return;
     }
 
@@ -434,22 +484,22 @@ function buildStatsOptions() {
         const opt = document.createElement("option");
         opt.value = m;
         opt.textContent = m;
-        monthSelect.appendChild(opt);
+        sel.appendChild(opt);
     });
 
-    monthSelect.onchange = () => renderStats(monthSelect.value);
-    renderStats(monthSelect.value);
+    sel.onchange = () => renderStats(sel.value);
+    renderStats(sel.value);
 }
 
 function renderStats(monthKey) {
-    statsGrid.innerHTML = "";
+    const grid = document.getElementById("statsGrid");
+    grid.innerHTML = "";
     if (!monthKey) return;
 
     const [y, m] = monthKey.split("-").map(Number);
     const dim = new Date(y, m, 0).getDate();
     let sCount = 0, fCount = 0;
 
-    // Grid bauen
     for (let d = 1; d <= dim; d++) {
         const key = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         const cell = document.createElement("div");
@@ -457,17 +507,16 @@ function renderStats(monthKey) {
         cell.textContent = d;
         if (data[key] === "success") { cell.classList.add("success"); sCount++; }
         if (data[key] === "fail") { cell.classList.add("fail"); fCount++; }
-        statsGrid.appendChild(cell);
+        grid.appendChild(cell);
     }
 
-    // Rekord
     let best = 0, tmp = 0;
     Object.keys(data).sort().forEach(k => {
         if (data[k] === "success") { tmp++; if (tmp > best) best = tmp; } else tmp = 0;
     });
 
     const perc = (sCount + fCount) > 0 ? Math.round((sCount / (sCount + fCount)) * 100) : 0;
-    statsSummary.innerHTML = `🟢 Clean: <b>${sCount}</b> | 🔴 Gekaut: <b>${fCount}</b><br>📈 Quote: <b>${perc}%</b> | 🏆 Rekord: <b>${best} Tage</b>`;
+    document.getElementById("statsSummary").innerHTML = `🟢 Clean: <b>${sCount}</b> | 🔴 Gekaut: <b>${fCount}</b><br>📈 Quote: <b>${perc}%</b> | 🏆 Rekord: <b>${best} Tage</b>`;
 }
 
 /* ===== ADMIN & ACC ===== */
@@ -476,19 +525,24 @@ function toggleAdmin() {
     localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
     updateAdminUI(); applyTimeLock();
 }
-function updateAdminUI() { adminToggle.textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; }
-function openAccount(){ accountModal.style.display = "flex"; }
-function closeAccount(){ accountModal.style.display = "none"; }
+function updateAdminUI() { 
+    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; 
+}
+function openAccount(){ document.getElementById("accountModal").style.display = "flex"; }
+function closeAccount(){ document.getElementById("accountModal").style.display = "none"; }
 function logout() { auth.signOut(); }
 
 function checkGift() {
+    const giftBox = document.getElementById("giftBox");
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
     let entries = 0, fail = false;
+    
     for (let d = 1; d <= new Date(y, m+1, 0).getDate(); d++) {
         const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         if (data[k] === "success") entries++;
-        else if (new Date(y, m, d) <= today) fail = true;
+        else if (data[k] === "fail") fail = true;
     }
+    
     if (!fail && entries > 0) {
         giftBox.className = "gift unlocked";
         giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉<br>Ich bin stolz auf dich!";
@@ -499,16 +553,24 @@ function checkGift() {
 }
 
 async function adminEditProgress() {
-    const email = editEmail.value.trim(), date = editDate.value, val = editValue.value;
+    const email = document.getElementById("editEmail").value.trim();
+    const date = document.getElementById("editDate").value;
+    const val = document.getElementById("editValue").value;
+    
     if (!email || !date) return alert("Daten unvollständig");
+    
     const d = new Date(date + "T12:00:00");
     const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+    
     if (snap.empty) return alert("User nicht gefunden");
+    
     const doc = snap.docs[0], uData = doc.data().streakData || {};
     const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    
     if (val === "") delete uData[k]; else uData[k] = val;
+    
     await db.collection("users").doc(doc.id).set({ streakData: uData }, { merge: true });
-    alert("Gespeichert");
+    alert("Gespeichert für " + email);
 }
 </script>
 </body>
