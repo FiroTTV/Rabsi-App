@@ -11,7 +11,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 :root {
@@ -22,7 +21,8 @@
 }
 
 html, body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     font-family: system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     background: var(--bg-gradient);
@@ -31,17 +31,41 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
-body { display: flex; justify-content: center; align-items: flex-start; padding: 24px 0; }
+body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 0;
+}
 
-#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.star { position: absolute; width: 2px; height: 2px; background: radial-gradient(circle, #fff, #c7b3ff); border-radius: 50%; animation: floatStar linear infinite; }
-@keyframes floatStar { from { transform: translateY(100vh); opacity: 0; } 50% { opacity: 1; } to { transform: translateY(-10vh); opacity: 0; } }
+#stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: radial-gradient(circle, #fff, #c7b3ff);
+    border-radius: 50%;
+    animation: floatStar linear infinite;
+}
+@keyframes floatStar {
+    from { transform: translateY(100vh); opacity: 0; }
+    50% { opacity: 1; }
+    to { transform: translateY(-10vh); opacity: 0; }
+}
 
 .app {
-    position: relative; z-index: 2;
+    position: relative;
+    z-index: 2;
     background: rgba(30, 27, 46, 0.95);
-    width: 90%; max-width: 420px;
-    border-radius: 28px; padding: 24px;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 28px;
+    padding: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     border: 1px solid rgba(255,255,255,0.05);
 }
@@ -49,16 +73,67 @@ body { display: flex; justify-content: center; align-items: flex-start; padding:
 
 h1 { text-align: center; margin-bottom: 16px; font-weight: 800; font-size: 1.5rem; }
 
-.top-nav { display: flex; gap: 10px; margin-bottom: 12px; }
+.top-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
 .top-nav button { margin-bottom: 0; flex: 1; background: #3a3a55; color: white; padding: 10px; }
 
-.nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 6px; }
-.nav-btn { width: 42px; height: 42px; background: var(--accent); color: white; border-radius: 10px; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+#adminToggle {
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 6px;
+}
+.nav-btn {
+    width: 42px;
+    height: 42px;
+    background: var(--accent);
+    color: white;
+    border-radius: 10px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+}
 .subtitle { font-weight: 700; color: #aaa; }
 
-.streak { text-align: center; background: #2a2a3d; border-radius: 16px; padding: 16px; margin-bottom: 20px; font-size: 22px; font-weight: 700; border: 1px solid rgba(122,92,255,0.2); }
+.streak {
+    text-align: center;
+    background: #2a2a3d;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    border: 1px solid rgba(122,92,255,0.2);
+}
 
-button { width: 100%; padding: 14px; border-radius: 16px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; transition: transform 0.1s, opacity 0.2s; }
+button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: transform 0.1s, opacity 0.2s;
+}
 button:active { transform: scale(0.98); }
 
 .buttons { display: flex; gap: 12px; margin-bottom: 20px; }
@@ -66,51 +141,98 @@ button:active { transform: scale(0.98); }
 
 .yes { background: var(--success); color: #000; box-shadow: 0 4px 15px rgba(123,228,149,0.3); }
 .no  { background: var(--fail); color: #000; box-shadow: 0 4px 15px rgba(255,138,138,0.3); }
+
 button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
-.day { aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #333; font-size: 13px; }
-.future { background: #444; opacity: 0.2; }
-.success { background: var(--success) !important; color: #000; box-shadow: 0 0 10px var(--success); }
-.fail { background: var(--fail) !important; color: #000; }
-.today { outline: 2px solid var(--accent); outline-offset: -2px; }
-
-.gift { text-align: center; padding: 18px; border-radius: 16px; background: #2a2a3d; }
-.locked { color: #888; border: 1px dashed #444; }
-.unlocked { background: linear-gradient(135deg, #ffd700, #ffa500); color: #000; font-weight: 800; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
-
-/* ===== DUOLINGO STREAK ANIMATION OVERLAY ===== */
-#streakOverlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 2000; backdrop-filter: blur(10px);
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.6;
+    margin-bottom: 8px;
 }
-.fire-icon { font-size: 100px; animation: popFire 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.streak-text { font-size: 32px; font-weight: 900; margin-top: 20px; color: #fff; text-align: center; }
-.streak-sub { font-size: 18px; color: var(--accent); margin-top: 10px; }
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+}
+.day {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    background: #333;
+    font-size: 13px;
+}
+.future  { background: #444; opacity: 0.2; }
+.success { background: var(--success) !important; color: #000; }
+.fail     { background: var(--fail) !important; color: #000; }
+.today   { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-@keyframes popFire {
-    0% { transform: scale(0) rotate(-20deg); opacity: 0; }
-    70% { transform: scale(1.3) rotate(10deg); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+.gift {
+    text-align: center;
+    padding: 18px;
+    border-radius: 16px;
+    background: #2a2a3d;
+    transition: all 0.3s ease;
+}
+.locked { color: #888; border: 1px dashed #444; font-size: 14px; }
+.unlocked {
+    background: linear-gradient(135deg, #ffd700, #ffa500);
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    transform: scale(1.02);
 }
 
-/* Modals & Inputs */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(8px); }
-.modal-content { background: #1c1c28; padding: 24px; border-radius: 24px; width: 85%; max-width: 400px; }
-input, select { width: 100%; padding: 14px; border-radius: 12px; border: none; margin-bottom: 12px; background: #2a2a3d; color: white; font-size: 16px; box-sizing: border-box; }
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+.modal-content {
+    background: #1c1c28;
+    padding: 24px;
+    border-radius: 24px;
+    width: 85%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.stats-detail-box {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    margin-bottom: 12px;
+    background: #2a2a3d;
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+}
 </style>
 </head>
 
 <body>
 <div id="stars"></div>
-
-<div id="streakOverlay" onclick="this.style.display='none'">
-    <div class="fire-icon">🔥</div>
-    <div class="streak-text" id="overlayStreakNum">0 TAGE!</div>
-    <div class="streak-sub">Du bist unaufhaltsam! 💅</div>
-    <button class="yes" style="width: auto; padding: 12px 30px; margin-top: 30px;">Weiter</button>
-</div>
 
 <div class="app" id="loginBox">
     <h1>💜 Rabsi Login</h1>
@@ -120,37 +242,68 @@ input, select { width: 100%; padding: 14px; border-radius: 12px; border: none; m
 </div>
 
 <div class="app hidden" id="appBox">
-    <h1>✨ Rabsi's Nail-Streak</h1>
+    <h1>🔥 Rabsi's Nail-Streak</h1>
+
     <div class="top-nav">
         <button onclick="openStats()">📊 Statistik</button>
         <button onclick="openAccount()">⚙️ Account</button>
     </div>
+    <button id="adminToggle" onclick="toggleAdmin()">👑 Admin-Modus: AUS</button>
+
     <div class="nav-header">
         <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
         <div class="subtitle" id="monthTitle"></div>
         <button class="nav-btn" onclick="changeMonth(1)">▶</button>
     </div>
+
     <div class="streak" id="streakBox">🔥 0 Tage Streak</div>
+
+    <div class="weekdays">
+        <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+    </div>
     <div class="calendar" id="calendar"></div>
+
     <div class="buttons">
         <button class="yes" id="btnYes">Laden...</button>
         <button class="no" id="btnNo">Laden...</button>
     </div>
+
     <div class="gift locked" id="giftBox">🔒 Lädt...</div>
+
     <button onclick="logout()" style="background:transparent; color:#888; font-size:12px; margin-top:10px;">🚪 Logout</button>
-    <button id="adminToggle" onclick="toggleAdmin()" style="font-size:10px; background:transparent; color:#333;">Admin: AUS</button>
 </div>
 
 <div class="modal" id="statsModal">
     <div class="modal-content">
-        <h2>📊 Statistik</h2>
+        <h2 style="margin-top:0">📊 Statistik</h2>
         <select id="monthSelect"></select>
-        <div id="statsSummary" style="margin-bottom: 15px;"></div>
+        <div id="statsSummary" class="stats-detail-box"></div>
+        <div class="calendar" id="statsGrid" style="margin-bottom:10px"></div>
         <button onclick="closeStats()" style="background:#444; color:white;">Schließen</button>
     </div>
 </div>
 
+<div class="modal" id="accountModal">
+    <div class="modal-content">
+        <h2>⚙️ Account</h2>
+        <p><b>E-Mail:</b> <span id="accEmail"></span></p>
+        <p><b>Einträge:</b> <span id="accDays"></span></p>
+        <hr style="border:0.5px solid #333; margin: 15px 0;">
+        <h3>Admin Edit</h3>
+        <input id="editEmail" placeholder="User E-Mail">
+        <input id="editDate" type="date">
+        <select id="editValue">
+            <option value="success">✅ clean</option>
+            <option value="fail">❌ gekaut</option>
+            <option value="">⬜ löschen</option>
+        </select>
+        <button class="yes" style="width:100%" onclick="adminEditProgress()">💾 Speichern</button>
+        <button onclick="closeAccount()">Schließen</button>
+    </div>
+</div>
+
 <script>
+/* ===== FIREBASE & STARS SETUP ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
   authDomain: "rabsi-nail-streak.firebaseapp.com",
@@ -163,28 +316,36 @@ const db = firebase.firestore();
 
 let data = {};
 let isAdmin = localStorage.getItem("rabsiAdmin") === "1";
-let displayDate = new Date(); displayDate.setDate(1);
+let displayDate = new Date();
+displayDate.setDate(1); 
 const today = new Date();
 
-/* STARS */
 const starsContainer = document.getElementById("stars");
 for (let i = 0; i < 40; i++) {
     const s = document.createElement("div"); s.className = "star";
     s.style.left = Math.random() * 100 + "vw";
     s.style.animationDuration = (15 + Math.random() * 15) + "s";
+    s.style.animationDelay = (Math.random() * 10) + "s";
     starsContainer.appendChild(s);
 }
 
-/* HELPER */
-function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+/* ===== LOGIK FÜR DEN ZIELTAG ===== */
+// Diese Funktion berechnet, welchen Tag der Button gerade beeinflusst
 function getTargetDate() {
     const now = new Date();
     const target = new Date(now);
-    if (now.getHours() < 20) target.setDate(now.getDate() - 1);
+    // Wenn es vor 20:00 Uhr ist, bearbeiten wir den gestrigen Tag
+    if (now.getHours() < 20) {
+        target.setDate(now.getDate() - 1);
+    }
     return target;
 }
 
-/* AUTH */
+function formatDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+/* ===== AUTH HANDLER ===== */
 auth.onAuthStateChanged(user => {
     if (!user) {
         document.getElementById("loginBox").classList.remove("hidden");
@@ -193,138 +354,187 @@ auth.onAuthStateChanged(user => {
     }
     document.getElementById("loginBox").classList.add("hidden");
     document.getElementById("appBox").classList.remove("hidden");
+    document.getElementById("accEmail").textContent = user.email;
+
     db.collection("users").doc(user.uid).onSnapshot(doc => {
         data = doc.data()?.streakData || {};
+        document.getElementById("accDays").textContent = Object.keys(data).length;
         updateAppView();
+        updateAdminUI();
+        applyTimeLock();
     });
 });
 
 async function login() {
     const e = document.getElementById("email").value.trim(), p = document.getElementById("password").value.trim();
+    const btn = document.getElementById("loginBtn");
     if (!e || !p) return alert("Daten eingeben");
+    btn.disabled = true; btn.textContent = "Lädt...";
     try { await auth.signInWithEmailAndPassword(e, p); } catch (err) {
         try { await auth.createUserWithEmailAndPassword(e, p); } catch (regErr) { alert(regErr.message); }
-    }
+    } finally { btn.disabled = false; btn.textContent = "Einloggen / Registrieren"; }
 }
 
-/* DUOLINGO STYLE ANIMATION */
-function showStreakAnimation(streakCount) {
-    const overlay = document.getElementById("streakOverlay");
-    document.getElementById("overlayStreakNum").textContent = streakCount + " TAGE!";
-    overlay.style.display = "flex";
-    
-    // Konfetti Regen
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#7a5cff', '#7be495'] });
-      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#7a5cff', '#7be495'] });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    }());
+/* ===== APP LOGIC ===== */
+function changeMonth(delta) {
+    displayDate.setMonth(displayDate.getMonth() + delta);
+    updateAppView();
 }
 
-/* MAIN LOGIC */
 function updateAppView() {
     document.getElementById("monthTitle").textContent = displayDate.toLocaleString("de-DE", { month: "long", year: "numeric" });
     buildCalendar();
-    const currentStreak = calculateStreak();
-    document.getElementById("streakBox").textContent = `🔥 ${currentStreak} Tage Streak`;
+    updateStreak();
     checkGift();
-    applyTimeLock();
-}
-
-function calculateStreak() {
-    let streak = 0; let check = new Date();
-    if (data[formatDate(check)] === undefined) check.setDate(check.getDate() - 1);
-    while (data[formatDate(check)] === "success") { streak++; check.setDate(check.getDate() - 1); }
-    return streak;
 }
 
 function applyTimeLock() {
     const target = getTargetDate();
     const key = formatDate(target);
     const bY = document.getElementById("btnYes"), bN = document.getElementById("btnNo");
+    
+    // UI Label: Welchen Tag retten wir gerade?
     const isToday = target.toDateString() === new Date().toDateString();
-    const label = isToday ? "Heute" : "Gestern";
+    const dayLabel = isToday ? "Heute" : "Gestern";
     
     if (data[key]) {
-        bY.disabled = bN.disabled = true;
-        bY.textContent = `${label}: ${data[key] === 'success' ? 'Clean ✅' : '-'}`;
-        bN.textContent = `${label}: ${data[key] === 'fail' ? 'Gekaut ❌' : '-'}`;
+        bY.disabled = true; bN.disabled = true;
+        bY.textContent = `${dayLabel}: ${data[key] === 'success' ? 'Erledigt ✅' : '-'}`;
+        bN.textContent = `${dayLabel}: ${data[key] === 'fail' ? 'Gekaut ❌' : '-'}`;
     } else {
-        bY.disabled = bN.disabled = false;
-        bY.textContent = `${label} clean ✅`; bN.textContent = `${label} gekaut ❌`;
+        bY.disabled = false; bN.disabled = false;
+        bY.textContent = `${dayLabel} nicht gekaut ✅`;
+        bN.textContent = `${dayLabel} gekaut ❌`;
     }
 }
 
 function buildCalendar() {
-    const cal = document.getElementById("calendar"); cal.innerHTML = "";
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
     const offset = (new Date(y, m, 1).getDay() + 6) % 7;
     const dim = new Date(y, m + 1, 0).getDate();
+
     for (let i = 0; i < offset; i++) cal.appendChild(document.createElement("div"));
     for (let d = 1; d <= dim; d++) {
         const el = document.createElement("div"); el.className = "day"; el.textContent = d;
-        const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        if (new Date(y, m, d) > today) el.classList.add("future");
-        if (data[k] === "success") el.classList.add("success");
-        if (data[k] === "fail") el.classList.add("fail");
+        const key = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const cDate = new Date(y, m, d);
+        if (cDate > today) el.classList.add("future");
+        if (data[key] === "success") el.classList.add("success");
+        if (data[key] === "fail") el.classList.add("fail");
         if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) el.classList.add("today");
         cal.appendChild(el);
     }
 }
 
-async function saveToday(res) {
+function updateStreak() {
+    let streak = 0;
+    let check = new Date();
+    // Wenn für heute noch kein Eintrag da ist, fange bei gestern an zu zählen
+    if (data[formatDate(check)] === undefined) check.setDate(check.getDate() - 1);
+    
+    while (data[formatDate(check)] === "success") {
+        streak++;
+        check.setDate(check.getDate() - 1);
+    }
+    document.getElementById("streakBox").textContent = `🔥 ${streak} Tage Streak`;
+}
+
+function saveToday(res) {
     const target = getTargetDate();
     const key = formatDate(target);
-    if (data[key] && !isAdmin) return;
     
-    await db.collection("users").doc(auth.currentUser.uid).set({ streakData: { [key]: res } }, { merge: true });
+    if (data[key] && !isAdmin) return; // Verhindert doppeltes Abstimmen ohne Admin
     
-    if (res === 'success') {
-        // Berechne neuen Streak für die Animation
-        data[key] = 'success'; 
-        showStreakAnimation(calculateStreak());
-    }
+    data[key] = res;
+    db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
 
 document.getElementById("btnYes").onclick = () => saveToday("success");
 document.getElementById("btnNo").onclick = () => saveToday("fail");
 
-/* RESTLICHE FUNKTIONEN */
-function changeMonth(d) { displayDate.setMonth(displayDate.getMonth() + d); updateAppView(); }
-function openStats(){ document.getElementById("statsModal").style.display = "flex"; buildStatsOptions(); }
-function closeStats(){ document.getElementById("statsModal").style.display = "none"; }
-function logout() { auth.signOut(); }
-function toggleAdmin() { isAdmin = !isAdmin; localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0"); location.reload(); }
-
+/* ===== GIFT & MODALS (IDENTISCH) ===== */
 function checkGift() {
     const giftBox = document.getElementById("giftBox");
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
-    const dim = new Date(y, m + 1, 0).getDate();
-    let s = 0, f = false;
-    for (let d = 1; d <= dim; d++) {
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    let sCount = 0, hasFail = false;
+
+    for (let d = 1; d <= daysInMonth; d++) {
         const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        if (data[k] === "success") s++; else if (data[k] === "fail") f = true;
+        if (data[k] === "success") sCount++;
+        else if (data[k] === "fail") hasFail = true;
     }
-    if (f) { giftBox.className = "gift locked"; giftBox.textContent = "❌ Monat verloren"; }
-    else if (s === dim) { giftBox.className = "gift unlocked"; giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉"; }
-    else { giftBox.className = "gift locked"; giftBox.textContent = `🔒 Noch ${dim - s} Tage bis zum Geschenk 🎁`; }
+
+    if (hasFail) {
+        giftBox.className = "gift locked";
+        giftBox.textContent = "❌ Monat verloren";
+    } else if (sCount === daysInMonth) {
+        giftBox.className = "gift unlocked";
+        giftBox.innerHTML = "🎁 MONATSKÖNIGIN 🎉";
+    } else {
+        giftBox.className = "gift locked";
+        giftBox.textContent = `🔒 Noch ${daysInMonth - sCount} Tage bis zum Geschenk 🎁`;
+    }
 }
 
+function openStats(){ document.getElementById("statsModal").style.display = "flex"; buildStatsOptions(); }
+function closeStats(){ document.getElementById("statsModal").style.display = "none"; }
+function openAccount(){ document.getElementById("accountModal").style.display = "flex"; }
+function closeAccount(){ document.getElementById("accountModal").style.display = "none"; }
+function toggleAdmin() {
+    isAdmin = !isAdmin;
+    localStorage.setItem("rabsiAdmin", isAdmin ? "1" : "0");
+    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin: AN" : "👑 Admin: AUS";
+    applyTimeLock();
+}
+function updateAdminUI() { document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin: AN" : "👑 Admin: AUS"; }
+function logout() { auth.signOut(); }
+
 function buildStatsOptions() {
-    const sel = document.getElementById("monthSelect"); sel.innerHTML = "";
+    const sel = document.getElementById("monthSelect");
+    sel.innerHTML = "";
     const months = [...new Set(Object.keys(data).map(k => k.slice(0, 7)))].sort().reverse();
-    months.forEach(m => { const opt = document.createElement("option"); opt.value = m; opt.textContent = m; sel.appendChild(opt); });
-    sel.onchange = () => {
-        const mk = sel.value; let s=0, f=0;
-        Object.keys(data).filter(k => k.startsWith(mk)).forEach(k => { if(data[k]==="success") s++; else f++; });
-        document.getElementById("statsSummary").innerHTML = `🟢 Clean: ${s} | 🔴 Gekaut: ${f}`;
-    };
-    if(months.length > 0) sel.onchange();
+    if (months.length === 0) return document.getElementById("statsSummary").innerHTML = "Keine Daten.";
+    months.forEach(m => {
+        const opt = document.createElement("option"); opt.value = m; opt.textContent = m;
+        sel.appendChild(opt);
+    });
+    sel.onchange = () => renderStats(sel.value);
+    renderStats(sel.value);
+}
+
+function renderStats(monthKey) {
+    const grid = document.getElementById("statsGrid");
+    grid.innerHTML = "";
+    const [y, m] = monthKey.split("-").map(Number);
+    const dim = new Date(y, m, 0).getDate();
+    let s = 0, f = 0;
+    for (let d = 1; d <= dim; d++) {
+        const k = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const cell = document.createElement("div"); cell.className = "day"; cell.textContent = d;
+        if (data[k] === "success") { cell.classList.add("success"); s++; }
+        if (data[k] === "fail") { cell.classList.add("fail"); f++; }
+        grid.appendChild(cell);
+    }
+    document.getElementById("statsSummary").innerHTML = `🟢 Clean: ${s} | 🔴 Gekaut: ${f}`;
+}
+
+async function adminEditProgress() {
+    const email = document.getElementById("editEmail").value.trim();
+    const date = document.getElementById("editDate").value;
+    const val = document.getElementById("editValue").value;
+    if (!email || !date) return alert("Daten fehlen");
+    const snap = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (snap.empty) return alert("User nicht gefunden");
+    const docId = snap.docs[0].id;
+    const uData = snap.docs[0].data().streakData || {};
+    const dStr = formatDate(new Date(date + "T12:00:00"));
+    if (val === "") delete uData[dStr]; else uData[dStr] = val;
+    await db.collection("users").doc(docId).set({ streakData: uData }, { merge: true });
+    alert("Gespeichert!");
 }
 </script>
 </body>
 </html>
-
