@@ -310,7 +310,7 @@ function checkGift() {
     }
     if (f) { giftBox.className = "gift locked"; giftBox.textContent = "❌ Monat verloren"; }
     else if (s === dim) { giftBox.className = "gift unlocked"; giftBox.innerHTML = "🎁 GESCHENK FREIGESCHALTET 🎉"; }
-    else { giftBox.className = "gift locked"; giftBox.textContent = `🔒 Noch ${dim - s} Tage`; }
+    else { giftBox.className = "gift locked"; giftBox.textContent = `🔒 Noch ${dim - s} Tage bis zum Geschenk 🎁`; }
 }
 
 function buildStatsOptions() {
@@ -327,3 +327,4 @@ function buildStatsOptions() {
 </script>
 </body>
 </html>
+
