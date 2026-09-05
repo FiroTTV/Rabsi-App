@@ -239,6 +239,7 @@ input, select {
     <input id="email" type="email" placeholder="E-Mail" autocomplete="email">
     <input id="password" type="password" placeholder="Passwort">
     <button class="yes" id="loginBtn" onclick="login()">Einloggen / Registrieren</button>
+    <button onclick="resetPassword()" style="background: transparent; color: #aaa; font-size: 13px; margin-top: 5px; box-shadow: none; padding: 10px;">Passwort vergessen?</button>
 </div>
 
 <div class="app hidden" id="appBox">
@@ -330,11 +331,9 @@ for (let i = 0; i < 40; i++) {
 }
 
 /* ===== LOGIK FÜR DEN ZIELTAG ===== */
-// Diese Funktion berechnet, welchen Tag der Button gerade beeinflusst
 function getTargetDate() {
     const now = new Date();
     const target = new Date(now);
-    // Wenn es vor 20:00 Uhr ist, bearbeiten wir den gestrigen Tag
     if (now.getHours() < 20) {
         target.setDate(now.getDate() - 1);
     }
@@ -375,6 +374,21 @@ async function login() {
     } finally { btn.disabled = false; btn.textContent = "Einloggen / Registrieren"; }
 }
 
+async function resetPassword() {
+    const email = document.getElementById("email").value.trim();
+    
+    if (!email) {
+        return alert("Bitte gib zuerst deine E-Mail-Adresse in das Feld ein, um das Passwort zurückzusetzen.");
+    }
+
+    try {
+        await auth.sendPasswordResetEmail(email);
+        alert("Eine E-Mail zum Zurücksetzen des Passworts wurde an " + email + " gesendet. Bitte prüfe deinen Posteingang (und Spam-Ordner).");
+    } catch (error) {
+        alert("Fehler beim Zurücksetzen: " + error.message);
+    }
+}
+
 /* ===== APP LOGIC ===== */
 function changeMonth(delta) {
     displayDate.setMonth(displayDate.getMonth() + delta);
@@ -393,7 +407,6 @@ function applyTimeLock() {
     const key = formatDate(target);
     const bY = document.getElementById("btnYes"), bN = document.getElementById("btnNo");
     
-    // UI Label: Welchen Tag retten wir gerade?
     const isToday = target.toDateString() === new Date().toDateString();
     const dayLabel = isToday ? "Heute" : "Gestern";
     
@@ -431,7 +444,6 @@ function buildCalendar() {
 function updateStreak() {
     let streak = 0;
     let check = new Date();
-    // Wenn für heute noch kein Eintrag da ist, fange bei gestern an zu zählen
     if (data[formatDate(check)] === undefined) check.setDate(check.getDate() - 1);
     
     while (data[formatDate(check)] === "success") {
@@ -445,7 +457,7 @@ function saveToday(res) {
     const target = getTargetDate();
     const key = formatDate(target);
     
-    if (data[key] && !isAdmin) return; // Verhindert doppeltes Abstimmen ohne Admin
+    if (data[key] && !isAdmin) return; 
     
     data[key] = res;
     db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
@@ -454,7 +466,7 @@ function saveToday(res) {
 document.getElementById("btnYes").onclick = () => saveToday("success");
 document.getElementById("btnNo").onclick = () => saveToday("fail");
 
-/* ===== GIFT & MODALS (IDENTISCH) ===== */
+/* ===== GIFT & MODALS ===== */
 function checkGift() {
     const giftBox = document.getElementById("giftBox");
     const y = displayDate.getFullYear(), m = displayDate.getMonth();
