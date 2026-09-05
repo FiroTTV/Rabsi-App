@@ -8,9 +8,13 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1a2e">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- Konfetti Animation -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 :root {
@@ -67,7 +71,7 @@ html, body {
 .screen {
     flex: 1;
     padding: 20px;
-    padding-bottom: 90px; /* Platz für Bottom Nav */
+    padding-bottom: 90px;
     display: none;
     animation: fadeIn 0.3s ease;
 }
@@ -89,7 +93,7 @@ html, body {
     margin-top: 20vh;
 }
 
-h1, h2 { text-align: center; margin-top: 0; font-weight: 800; }
+h1, h2, h3 { text-align: center; margin-top: 0; font-weight: 800; }
 h1 { font-size: 1.5rem; margin-bottom: 20px; }
 
 /* Bottom Navigation */
@@ -125,12 +129,14 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .yes { background: var(--success); color: #000; box-shadow: 0 4px 15px rgba(123,228,149,0.3); }
 .no  { background: var(--fail); color: #000; box-shadow: 0 4px 15px rgba(255,138,138,0.3); }
 .btn-primary { background: #3a3a55; }
+.btn-action { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(122,92,255,0.3); }
 
 input, select {
     width: 100%; padding: 14px; border-radius: 12px; border: none;
     margin-bottom: 12px; background: #2a2a3d; color: white;
-    font-size: 16px; box-sizing: border-box;
+    font-size: 16px; box-sizing: border-box; outline: none;
 }
+input:focus, select:focus { outline: 2px solid var(--accent); }
 
 /* Home Screen Elements */
 .nav-header {
@@ -193,6 +199,11 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
 .hidden { display: none !important; }
 
 #adminToggle { background: transparent; border: 1px solid #444; color: #888; font-size: 13px; }
+
+/* Nickname Section Layout */
+.input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+.input-group input { margin-bottom: 0; }
+.input-group button { width: auto; padding: 14px 20px; margin-bottom: 0; }
 </style>
 </head>
 
@@ -253,6 +264,18 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
         <div class="screen" id="tabProfile">
             <h1>👤 Profil</h1>
             
+            <!-- Install PWA Button (Versteckt bis ready) -->
+            <button id="installBtn" class="btn-action hidden" onclick="installApp()">App installieren 📱</button>
+
+            <div class="card">
+                <h2 style="font-size: 1.2rem;">✏️ Nickname</h2>
+                <p style="font-size: 13px; color: #aaa; margin-top: -10px; margin-bottom: 15px;">Wie sollen dich andere in der Liste sehen?</p>
+                <div class="input-group">
+                    <input id="nicknameInput" type="text" placeholder="Dein Name">
+                    <button class="btn-primary" onclick="saveNickname()">Speichern</button>
+                </div>
+            </div>
+
             <div class="card">
                 <h2 style="font-size: 1.2rem;">📊 Statistik</h2>
                 <select id="monthSelect"></select>
@@ -305,6 +328,28 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
 </div>
 
 <script>
+/* ===== PWA INSTALL LOGIC ===== */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Verhindert das automatische Chrome-Pop-up
+    e.preventDefault();
+    // Speichere das Event für später
+    deferredPrompt = e;
+    // Zeige den Installations-Button im Profil an
+    document.getElementById('installBtn').classList.remove('hidden');
+});
+
+async function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            document.getElementById('installBtn').classList.add('hidden');
+        }
+        deferredPrompt = null;
+    }
+}
+
 /* ===== FIREBASE & STARS SETUP ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyBjc2ti7FM5hRIzMrMxOsLIA_K5ulBRP3w",
@@ -334,19 +379,18 @@ for (let i = 0; i < 40; i++) {
 
 /* ===== APP NAVIGATION LOGIC ===== */
 function switchTab(tabId, navBtn) {
-    // Hide all screens
+    // Haptisches Feedback (Kurzes Vibrieren bei Tabwechsel)
+    if (navigator.vibrate) navigator.vibrate(30);
+
     document.getElementById("tabHome").classList.remove("active");
     document.getElementById("tabCommunity").classList.remove("active");
     document.getElementById("tabProfile").classList.remove("active");
     
-    // Show selected screen
     document.getElementById(tabId).classList.add("active");
     
-    // Update Nav bar highlights
     document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
     if(navBtn) navBtn.classList.add("active");
 
-    // Wenn Community Tab geöffnet wird, Daten laden
     if(tabId === "tabCommunity") {
         loadCommunity();
     }
@@ -364,7 +408,6 @@ function formatDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
-// Berechnet die Streak aus einem beliebigen Daten-Objekt (für Home & Community Tab)
 function calculateStreakCount(userData) {
     let streak = 0;
     let check = new Date();
@@ -385,7 +428,6 @@ auth.onAuthStateChanged(user => {
         return;
     }
     
-    // Speichere E-Mail in DB, damit der Name im Community Tab auftaucht
     db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
 
     document.getElementById("loginScreen").classList.remove("active");
@@ -393,12 +435,18 @@ auth.onAuthStateChanged(user => {
     document.getElementById("accEmail").textContent = user.email;
 
     db.collection("users").doc(user.uid).onSnapshot(doc => {
-        data = doc.data()?.streakData || {};
+        const docData = doc.data() || {};
+        data = docData.streakData || {};
+        
+        // Lade Nickname (wenn vorhanden), sonst Teil der Email
+        const currentName = docData.displayName || user.email.split("@")[0];
+        document.getElementById("nicknameInput").value = currentName;
+
         document.getElementById("accDays").textContent = Object.keys(data).length;
         updateAppView();
         updateAdminUI();
         applyTimeLock();
-        buildStatsOptions(); // Stats direkt initialisieren
+        buildStatsOptions(); 
     });
 });
 
@@ -422,6 +470,23 @@ async function resetPassword() {
 }
 
 function logout() { auth.signOut(); }
+
+/* ===== NICKNAME LOGIC ===== */
+async function saveNickname() {
+    const newName = document.getElementById("nicknameInput").value.trim();
+    if (!newName) return alert("Bitte gib einen Namen ein.");
+    
+    const btn = document.querySelector("#nicknameInput + button");
+    btn.textContent = "Lädt...";
+    try {
+        await db.collection("users").doc(auth.currentUser.uid).set({ displayName: newName }, { merge: true });
+        btn.textContent = "Gespeichert!";
+        setTimeout(() => btn.textContent = "Speichern", 2000);
+    } catch(e) {
+        alert("Fehler beim Speichern!");
+        btn.textContent = "Speichern";
+    }
+}
 
 /* ===== TAB 1: HOME LOGIC ===== */
 function changeMonth(delta) {
@@ -482,6 +547,20 @@ function saveToday(res) {
     const target = getTargetDate();
     const key = formatDate(target);
     if (data[key] && !isAdmin) return; 
+    
+    // VISUELLES & HAPTISCHES FEEDBACK
+    if (res === "success") {
+        if (navigator.vibrate) navigator.vibrate([80, 50, 80]); // 2x kurzes Vibrieren
+        confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#7be495', '#7a5cff', '#ffffff'] // Angepasst an App-Farben
+        });
+    } else if (res === "fail") {
+        if (navigator.vibrate) navigator.vibrate(250); // 1x tiefes Vibrieren
+    }
+
     data[key] = res;
     db.collection("users").doc(auth.currentUser.uid).set({ streakData: data }, { merge: true });
 }
@@ -525,16 +604,15 @@ async function loadCommunity() {
         snap.forEach(doc => {
             const d = doc.data();
             const emailStr = d.email || "Unbekannt";
-            const name = emailStr.split("@")[0]; // Name = alles vor dem @ Zeichen
+            // Nutze den gespeicherten Nickname, falls vorhanden. Ansonsten Email Prefix.
+            const name = d.displayName || emailStr.split("@")[0]; 
             const streakCount = calculateStreakCount(d.streakData || {});
             
-            // Highlight my own card
             const isMe = (auth.currentUser && auth.currentUser.email === emailStr);
             
             usersArray.push({ name, streakCount, isMe });
         });
         
-        // Nach Streak sortieren (Höchste zuerst)
         usersArray.sort((a, b) => b.streakCount - a.streakCount);
         
         usersArray.forEach((u, index) => {
@@ -560,7 +638,7 @@ async function loadCommunity() {
         list.innerHTML = html;
     } catch(e) {
         console.error(e);
-        list.innerHTML = "<p style='text-align:center; color:var(--fail);'>Konnte Daten nicht laden. Möglicherweise blockieren Firestore-Sicherheitsregeln den Lesezugriff.</p>";
+        list.innerHTML = "<p style='text-align:center; color:var(--fail);'>Konnte Daten nicht laden.</p>";
     }
 }
 
