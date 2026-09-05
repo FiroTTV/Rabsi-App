@@ -287,8 +287,11 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
                 <h2 style="font-size: 1.2rem;">⚙️ Account</h2>
                 <p style="font-size: 14px;"><b>E-Mail:</b> <span id="accEmail"></span><br>
                 <b>Einträge:</b> <span id="accDays"></span></p>
+
+                <!-- NEU: Passwort im Profil ändern -->
+                <button class="btn-primary" onclick="changePasswordInProfile()" style="font-size:14px; margin-top:5px;">🔑 Passwort ändern</button>
                 
-                <button id="adminToggle" onclick="toggleAdmin()">👑 Admin-Modus: AUS</button>
+                <button id="adminToggle" onclick="toggleAdmin()" style="margin-top: 10px;">👑 Admin-Modus: AUS</button>
                 
                 <div id="adminTools" class="hidden">
                     <hr>
@@ -399,13 +402,10 @@ function handleSwipe() {
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
     
-    // Nur reagieren, wenn hauptsächlich horizontal gewischt wurde (nicht beim Scrollen)
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > 60) {
-            // Nach links wischen -> Nächster Tab
             if (currentTabIndex < tabOrder.length - 1) switchTab(tabOrder[currentTabIndex + 1]);
         } else if (diffX < -60) {
-            // Nach rechts wischen -> Vorheriger Tab
             if (currentTabIndex > 0) switchTab(tabOrder[currentTabIndex - 1]);
         }
     }
@@ -414,7 +414,6 @@ function handleSwipe() {
 function switchTab(tabId) {
     if (navigator.vibrate) navigator.vibrate(30);
 
-    // Update index für die Swipe-Logik
     currentTabIndex = tabOrder.indexOf(tabId);
 
     document.getElementById("tabHome").classList.remove("active");
@@ -424,7 +423,6 @@ function switchTab(tabId) {
     document.getElementById(tabId).classList.add("active");
     
     document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
-    // Passenden Button in der Nav-Leiste markieren
     document.querySelector(`.nav-item[onclick*="${tabId}"]`).classList.add("active");
 
     if(tabId === "tabCommunity") {
@@ -502,6 +500,17 @@ async function resetPassword() {
         await auth.sendPasswordResetEmail(email);
         alert("E-Mail zum Zurücksetzen gesendet an " + email);
     } catch (error) { alert("Fehler: " + error.message); }
+}
+
+// NEU: Direkt im Profil das Passwort zurücksetzen lassen per Mail
+async function changePasswordInProfile() {
+    const email = auth.currentUser.email;
+    try {
+        await auth.sendPasswordResetEmail(email);
+        alert("Es wurde eine E-Mail zum Ändern deines Passworts an " + email + " gesendet.");
+    } catch (error) {
+        alert("Fehler: " + error.message);
+    }
 }
 
 function logout() { auth.signOut(); }
@@ -583,17 +592,16 @@ function saveToday(res) {
     const key = formatDate(target);
     if (data[key] && !isAdmin) return; 
     
-    // VISUELLES & HAPTISCHES FEEDBACK
     if (res === "success") {
-        if (navigator.vibrate) navigator.vibrate([80, 50, 80]); // 2x kurzes Vibrieren
+        if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
         confetti({
             particleCount: 120,
             spread: 80,
             origin: { y: 0.6 },
-            colors: ['#7be495', '#7a5cff', '#ffffff'] // Angepasst an App-Farben
+            colors: ['#7be495', '#7a5cff', '#ffffff']
         });
     } else if (res === "fail") {
-        if (navigator.vibrate) navigator.vibrate(250); // 1x tiefes Vibrieren
+        if (navigator.vibrate) navigator.vibrate(250);
     }
 
     data[key] = res;
