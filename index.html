@@ -223,7 +223,7 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
+    <!-- MAIN APP WRAPPER (Swipeable Area) -->
     <div id="mainApp" class="hidden">
         
         <!-- TAB 1: HOME -->
@@ -310,15 +310,15 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
 
         <!-- BOTTOM NAVIGATION -->
         <nav class="bottom-nav">
-            <button onclick="switchTab('tabHome', this)" class="nav-item active">
+            <button onclick="switchTab('tabHome')" class="nav-item active">
                 <span class="icon">🏠</span>
                 Home
             </button>
-            <button onclick="switchTab('tabCommunity', this)" class="nav-item">
+            <button onclick="switchTab('tabCommunity')" class="nav-item">
                 <span class="icon">🌍</span>
                 Freunde
             </button>
-            <button onclick="switchTab('tabProfile', this)" class="nav-item">
+            <button onclick="switchTab('tabProfile')" class="nav-item">
                 <span class="icon">👤</span>
                 Profil
             </button>
@@ -331,11 +331,8 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
 /* ===== PWA INSTALL LOGIC ===== */
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Verhindert das automatische Chrome-Pop-up
     e.preventDefault();
-    // Speichere das Event für später
     deferredPrompt = e;
-    // Zeige den Installations-Button im Profil an
     document.getElementById('installBtn').classList.remove('hidden');
 });
 
@@ -377,10 +374,48 @@ for (let i = 0; i < 40; i++) {
     starsContainer.appendChild(s);
 }
 
-/* ===== APP NAVIGATION LOGIC ===== */
-function switchTab(tabId, navBtn) {
-    // Haptisches Feedback (Kurzes Vibrieren bei Tabwechsel)
+/* ===== APP NAVIGATION & SWIPE LOGIC ===== */
+const tabOrder = ['tabHome', 'tabCommunity', 'tabProfile'];
+let currentTabIndex = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+const mainApp = document.getElementById('mainApp');
+
+mainApp.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, {passive: true});
+
+mainApp.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+}, {passive: true});
+
+function handleSwipe() {
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+    
+    // Nur reagieren, wenn hauptsächlich horizontal gewischt wurde (nicht beim Scrollen)
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 60) {
+            // Nach links wischen -> Nächster Tab
+            if (currentTabIndex < tabOrder.length - 1) switchTab(tabOrder[currentTabIndex + 1]);
+        } else if (diffX < -60) {
+            // Nach rechts wischen -> Vorheriger Tab
+            if (currentTabIndex > 0) switchTab(tabOrder[currentTabIndex - 1]);
+        }
+    }
+}
+
+function switchTab(tabId) {
     if (navigator.vibrate) navigator.vibrate(30);
+
+    // Update index für die Swipe-Logik
+    currentTabIndex = tabOrder.indexOf(tabId);
 
     document.getElementById("tabHome").classList.remove("active");
     document.getElementById("tabCommunity").classList.remove("active");
@@ -389,7 +424,8 @@ function switchTab(tabId, navBtn) {
     document.getElementById(tabId).classList.add("active");
     
     document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
-    if(navBtn) navBtn.classList.add("active");
+    // Passenden Button in der Nav-Leiste markieren
+    document.querySelector(`.nav-item[onclick*="${tabId}"]`).classList.add("active");
 
     if(tabId === "tabCommunity") {
         loadCommunity();
@@ -438,7 +474,6 @@ auth.onAuthStateChanged(user => {
         const docData = doc.data() || {};
         data = docData.streakData || {};
         
-        // Lade Nickname (wenn vorhanden), sonst Teil der Email
         const currentName = docData.displayName || user.email.split("@")[0];
         document.getElementById("nicknameInput").value = currentName;
 
@@ -604,12 +639,9 @@ async function loadCommunity() {
         snap.forEach(doc => {
             const d = doc.data();
             const emailStr = d.email || "Unbekannt";
-            // Nutze den gespeicherten Nickname, falls vorhanden. Ansonsten Email Prefix.
             const name = d.displayName || emailStr.split("@")[0]; 
             const streakCount = calculateStreakCount(d.streakData || {});
-            
             const isMe = (auth.currentUser && auth.currentUser.email === emailStr);
-            
             usersArray.push({ name, streakCount, isMe });
         });
         
