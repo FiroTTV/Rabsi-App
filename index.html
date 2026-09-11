@@ -335,6 +335,25 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
             
             <button id="installBtn" class="btn-action hidden" onclick="installApp()">App installieren 📱</button>
 
+            <!-- Admin-Edit Sektion (Direkt oben im Profil für schnellen Zugriff) -->
+            <div class="card" style="border: 1px solid var(--accent);">
+                <h2 style="font-size: 1.2rem;">👑 Admin-Steuerung</h2>
+                <button id="adminToggle" onclick="toggleAdmin()">Admin-Modus: AUS</button>
+                
+                <div id="adminTools" class="hidden" style="margin-top: 15px;">
+                    <hr>
+                    <h3 style="font-size:1rem; margin-bottom: 10px;">🔧 Fremden Account bearbeiten</h3>
+                    <input id="editEmail" placeholder="User E-Mail eingeben">
+                    <input id="editDate" type="date">
+                    <select id="editValue">
+                        <option value="success">✅ clean</option>
+                        <option value="fail">❌ gekaut</option>
+                        <option value="">⬜ löschen</option>
+                    </select>
+                    <button class="yes" onclick="adminEditProgress()">💾 Für User speichern</button>
+                </div>
+            </div>
+
             <!-- Aktivitätsgraph (Letzte 30 Tage) -->
             <div class="card">
                 <h2 style="font-size: 1.2rem;">📈 Letzte 30 Tage</h2>
@@ -375,22 +394,6 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
                 <b>Einträge:</b> <span id="accDays"></span></p>
 
                 <button class="btn-primary" onclick="changePasswordInProfile()" style="font-size:14px; margin-top:5px;">🔑 Passwort ändern</button>
-                
-                <button id="adminToggle" onclick="toggleAdmin()" style="margin-top: 10px;">👑 Admin-Modus: AUS</button>
-                
-                <!-- Admin-Edit Sektion -->
-                <div id="adminTools" class="hidden">
-                    <hr>
-                    <h3 style="font-size:1rem;">🔧 Admin Edit (Fremde Accounts)</h3>
-                    <input id="editEmail" placeholder="User E-Mail">
-                    <input id="editDate" type="date">
-                    <select id="editValue">
-                        <option value="success">✅ clean</option>
-                        <option value="fail">❌ gekaut</option>
-                        <option value="">⬜ löschen</option>
-                    </select>
-                    <button class="yes" onclick="adminEditProgress()">💾 Speichern</button>
-                </div>
 
                 <hr>
                 <button onclick="logout()" style="background:transparent; color:#ff8a8a; font-size:14px; border:1px solid #ff8a8a;">🚪 Abmelden</button>
@@ -497,7 +500,6 @@ function switchTab(tabId) {
 
     currentTabIndex = tabOrder.indexOf(tabId);
 
-    // Exakte Verschiebung der Bubble für das Grid-Layout
     const indicator = document.getElementById("navIndicator");
     indicator.style.transform = `translateX(${currentTabIndex * 100}%)`;
 
@@ -563,7 +565,7 @@ auth.onAuthStateChanged(user => {
 
         document.getElementById("accDays").textContent = Object.keys(data).length;
         updateAppView();
-        updateAdminUI();
+        updateAdminUI(); // Hier wird der Admin-Status direkt angewendet
         applyTimeLock();
         buildStatsOptions(); 
         renderHeatmap();
@@ -812,7 +814,7 @@ function toggleAdmin() {
 }
 
 function updateAdminUI() { 
-    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin: AN" : "👑 Admin: AUS"; 
+    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; 
     document.getElementById("adminTools").style.display = isAdmin ? "block" : "none";
 }
 
@@ -846,26 +848,49 @@ function renderStats(monthKey) {
 }
 
 async function adminEditProgress() {
-    const email = document.getElementById("editEmail").value.trim();
+    const emailInput = document.getElementById("editEmail").value.trim().toLowerCase();
     const date = document.getElementById("editDate").value;
     const val = document.getElementById("editValue").value;
-    if (!email || !date) return alert("Bitte E-Mail und Datum eingeben!");
     
-    const snap = await db.collection("users").where("email", "==", email).limit(1).get();
-    if (snap.empty) return alert("User mit dieser E-Mail nicht gefunden!");
-    
-    const docId = snap.docs[0].id;
-    const uData = snap.docs[0].data().streakData || {};
-    const dStr = formatDate(new Date(date + "T12:00:00"));
-    
-    if (val === "") {
-        delete uData[dStr];
-    } else {
-        uData[dStr] = val;
+    if (!emailInput || !date) return alert("Bitte E-Mail und Datum eingeben!");
+
+    try {
+        const snap = await db.collection("users").get();
+        let targetDocId = null;
+        let uData = {};
+
+        snap.forEach(doc => {
+            const d = doc.data();
+            const docEmail = (d.email || "").trim().toLowerCase();
+            // Prüfe auf exakte Übereinstimmung oder falls der Prefix (vor @) eingegeben wurde
+            if (docEmail === emailInput || docEmail.split("@")[0] === emailInput) {
+                targetDocId = doc.id;
+                uData = d.streakData || {};
+            }
+        });
+
+        if (!targetDocId) {
+            return alert("Kein Account zur E-Mail '" + emailInput + "' gefunden!");
+        }
+
+        const dStr = formatDate(new Date(date + "T12:00:00"));
+        
+        if (val === "") {
+            delete uData[dStr];
+        } else {
+            uData[dStr] = val;
+        }
+
+        await db.collection("users").doc(targetDocId).set({ streakData: uData }, { merge: true });
+        alert("Erfolgreich für " + emailInput + " am " + date + " gespeichert!");
+        
+        // Felder leeren nach Erfolg
+        document.getElementById("editEmail").value = "";
+        document.getElementById("editDate").value = "";
+    } catch (err) {
+        console.error(err);
+        alert("Fehler beim Speichern: " + err.message);
     }
-    
-    await db.collection("users").doc(docId).set({ streakData: uData }, { merge: true });
-    alert("Erfolgreich für " + email + " gespeichert!");
 }
 </script>
 </body>
