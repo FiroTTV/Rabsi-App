@@ -230,7 +230,7 @@ input:focus, select:focus { outline: 2px solid var(--accent); }
 hr { border: 0.5px solid #333; margin: 20px 0; }
 .hidden { display: none !important; }
 
-#adminToggle { background: transparent; border: 1px solid #444; color: #888; font-size: 13px; }
+#adminToggle { background: transparent; border: 1px solid #444; color: #888; font-size: 13px; margin-bottom: 0; }
 
 /* Nickname Layout */
 .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -335,9 +335,10 @@ hr { border: 0.5px solid #333; margin: 20px 0; }
             
             <button id="installBtn" class="btn-action hidden" onclick="installApp()">App installieren 📱</button>
 
-            <!-- Admin-Edit Sektion (Direkt oben im Profil für schnellen Zugriff) -->
-            <div class="card" style="border: 1px solid var(--accent);">
-                <h2 style="font-size: 1.2rem;">👑 Admin-Steuerung</h2>
+            <!-- Admin-Steuerung direkt oben im Profil -->
+            <div class="card" style="border: 1px solid rgba(122, 92, 255, 0.4);">
+                <h2 style="font-size: 1.2rem; margin-bottom: 12px;">👑 Admin-Modus</h2>
+                <!-- Der Toggle-Button ist standardmäßig IMMER sichtbar -->
                 <button id="adminToggle" onclick="toggleAdmin()">Admin-Modus: AUS</button>
                 
                 <div id="adminTools" class="hidden" style="margin-top: 15px;">
@@ -565,7 +566,7 @@ auth.onAuthStateChanged(user => {
 
         document.getElementById("accDays").textContent = Object.keys(data).length;
         updateAppView();
-        updateAdminUI(); // Hier wird der Admin-Status direkt angewendet
+        updateAdminUI(); // Zustand nach Laden setzen
         applyTimeLock();
         buildStatsOptions(); 
         renderHeatmap();
@@ -814,8 +815,19 @@ function toggleAdmin() {
 }
 
 function updateAdminUI() { 
-    document.getElementById("adminToggle").textContent = isAdmin ? "👑 Admin-Modus: AN" : "👑 Admin-Modus: AUS"; 
-    document.getElementById("adminTools").style.display = isAdmin ? "block" : "none";
+    const btn = document.getElementById("adminToggle");
+    const tools = document.getElementById("adminTools");
+    if (isAdmin) {
+        btn.textContent = "👑 Admin-Modus: AN";
+        btn.style.background = "var(--accent)";
+        btn.style.color = "#fff";
+        tools.classList.remove("hidden");
+    } else {
+        btn.textContent = "👑 Admin-Modus: AUS";
+        btn.style.background = "transparent";
+        btn.style.color = "#888";
+        tools.classList.add("hidden");
+    }
 }
 
 function buildStatsOptions() {
@@ -855,24 +867,15 @@ async function adminEditProgress() {
     if (!emailInput || !date) return alert("Bitte E-Mail und Datum eingeben!");
 
     try {
-        const snap = await db.collection("users").get();
-        let targetDocId = null;
-        let uData = {};
+        // Exakte Abfrage statt Iteration, da die Iteration bei Restriktionen abstürzt
+        const snap = await db.collection("users").where("email", "==", emailInput).limit(1).get();
 
-        snap.forEach(doc => {
-            const d = doc.data();
-            const docEmail = (d.email || "").trim().toLowerCase();
-            // Prüfe auf exakte Übereinstimmung oder falls der Prefix (vor @) eingegeben wurde
-            if (docEmail === emailInput || docEmail.split("@")[0] === emailInput) {
-                targetDocId = doc.id;
-                uData = d.streakData || {};
-            }
-        });
-
-        if (!targetDocId) {
-            return alert("Kein Account zur E-Mail '" + emailInput + "' gefunden!");
+        if (snap.empty) {
+            return alert("Kein Account zur E-Mail '" + emailInput + "' gefunden! Entweder existiert die E-Mail nicht, oder deine Firestore-Regeln blockieren das Lesen von fremden E-Mails.");
         }
 
+        const targetDocId = snap.docs[0].id;
+        const uData = snap.docs[0].data().streakData || {};
         const dStr = formatDate(new Date(date + "T12:00:00"));
         
         if (val === "") {
@@ -884,12 +887,11 @@ async function adminEditProgress() {
         await db.collection("users").doc(targetDocId).set({ streakData: uData }, { merge: true });
         alert("Erfolgreich für " + emailInput + " am " + date + " gespeichert!");
         
-        // Felder leeren nach Erfolg
         document.getElementById("editEmail").value = "";
         document.getElementById("editDate").value = "";
     } catch (err) {
         console.error(err);
-        alert("Fehler beim Speichern: " + err.message);
+        alert("Fehler (Blockiert durch Firestore-Sicherheitsregeln!): " + err.message + "\n\nErlaube das Lesen/Schreiben in der Firebase Console.");
     }
 }
 </script>
